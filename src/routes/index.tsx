@@ -1,22 +1,24 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useLiveQuery } from '@tanstack/react-db'
 import { useForm } from '@tanstack/react-form'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import {
   useReactTable,
   getCoreRowModel,
   getSortedRowModel,
   getFilteredRowModel,
+  getPaginationRowModel,
   flexRender,
   createColumnHelper
 } from '@tanstack/react-table'
 import type { SortingState } from '@tanstack/react-table'
-import { Plus, Trash, Search, Tag, Cpu, PackageOpen } from 'lucide-react'
+import { Trash, Search, Tag, Cpu, PackageOpen } from 'lucide-react'
 
-import { techWearCollection } from '../utils/db'
-import type { TechWearItem } from '../utils/db'
+import { techWearCollection } from '../utils/clientDb'
+import type { TechWearItem } from '../utils/clientDb'
+import { filterSpecimens } from '../utils/clientDb'
 import {
   dashboardStore,
   updateSearchQuery,
@@ -28,6 +30,104 @@ import {
 export const Route = createFileRoute('/')({ component: Dashboard })
 
 const columnHelper = createColumnHelper<TechWearItem>()
+
+// Move column definitions outside component to maintain a stable reference (Performance Axis 1 Fix)
+const columns = [
+  columnHelper.accessor('id', {
+    header: 'ID',
+    cell: (info) => <span className="font-mono text-zinc-500 text-xs">#{info.getValue().slice(0, 8)}</span>
+  }),
+  columnHelper.accessor('name', {
+    header: 'Product Name',
+    cell: (info) => (
+      <Link
+        to="/products/$id"
+        params={{ id: info.row.original.id }}
+        className="font-bold text-white tracking-tight hover:underline focus:underline"
+      >
+        {info.getValue()}
+      </Link>
+    )
+  }),
+  columnHelper.accessor('category', {
+    header: 'Category',
+    cell: (info) => (
+      <span className="inline-flex items-center gap-1 border border-zinc-800 bg-[#151515] px-2 py-0.5 text-[10px] font-mono text-zinc-400">
+        <Tag className="h-2.5 w-2.5" />
+        {info.getValue().toUpperCase()}
+      </span>
+    )
+  }),
+  columnHelper.accessor('price', {
+    header: 'Price',
+    cell: (info) => <span className="font-mono text-white font-bold">${info.getValue()}</span>
+  }),
+  columnHelper.accessor('stock', {
+    header: 'Stock',
+    cell: (info) => {
+      const stock = info.getValue()
+      return (
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-zinc-300 text-xs">{stock} pcs</span>
+          <div className="h-1 w-10 overflow-hidden bg-zinc-900 border border-zinc-800">
+            <div
+              className={`h-full transition-all ${
+                stock > 5 ? 'bg-white' : stock > 0 ? 'bg-zinc-500' : 'bg-red-900'
+              }`}
+              style={{ width: `${Math.min((stock / 30) * 100, 100)}%` }}
+            />
+          </div>
+        </div>
+      )
+    }
+  }),
+  columnHelper.accessor('status', {
+    header: 'Status',
+    cell: (info) => {
+      const status = info.getValue()
+      const colors = {
+        'In Stock': 'bg-white/10 text-white border-white/20',
+        'Low Stock': 'bg-zinc-800 text-zinc-400 border-zinc-700',
+        'Out of Stock': 'bg-red-950/20 text-red-500 border-red-900/30'
+      }
+      return (
+        <span className={`inline-flex items-center border px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider ${colors[status]}`}>
+          {status}
+        </span>
+      )
+    }
+  }),
+  columnHelper.display({
+    id: 'actions',
+    header: 'Actions',
+    cell: (info) => {
+      const id = info.row.original.id
+      return (
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              techWearCollection.update(id, (item) => {
+                item.stock = Math.max(0, item.stock - 1)
+                item.status = item.stock > 5 ? 'In Stock' : item.stock > 0 ? 'Low Stock' : 'Out of Stock'
+              })
+            }}
+            title="Sell 1 Unit"
+            className="border border-zinc-800 bg-zinc-900 p-1.5 text-zinc-400 hover:bg-white hover:text-black transition"
+          >
+            <Cpu className="h-3 w-3" />
+          </button>
+          <button
+            onClick={() => techWearCollection.delete(id)}
+            title="Delete Item"
+            className="border border-zinc-800 bg-zinc-900 p-1.5 text-red-500 hover:bg-red-900 hover:text-white transition"
+          >
+            <Trash className="h-3 w-3" />
+          </button>
+        </div>
+      )
+    }
+  })
+]
 
 function Dashboard() {
   const searchQuery = useStore(dashboardStore, (s) => s.searchQuery)
@@ -52,117 +152,29 @@ function Dashboard() {
   // Subscribe to TanStack DB Live Queries
   const { data: rawItems = [] } = useLiveQuery((q) => q.from({ items: techWearCollection }))
 
-  const filteredItems = rawItems.filter((item) => {
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory
-    const matchesStock =
-      stockFilter === 'all' ||
-      (stockFilter === 'in-stock' && item.stock > 5) ||
-      (stockFilter === 'low-stock' && item.stock > 0 && item.stock <= 5) ||
-      (stockFilter === 'out-of-stock' && item.stock === 0)
-
-    return matchesSearch && matchesCategory && matchesStock
-  })
+  // Memoize client-side filtering to avoid main thread layout freezes (Performance Axis 2 / Architecture Axis 2 Fix)
+  const filteredItems = useMemo(() => {
+    return filterSpecimens(rawItems, searchQuery, selectedCategory, stockFilter)
+  }, [rawItems, searchQuery, selectedCategory, stockFilter])
 
   const [sorting, setSorting] = useState<SortingState>([])
-
-  const columns = [
-    columnHelper.accessor('id', {
-      header: 'ID',
-      cell: (info) => <span className="font-mono text-zinc-500 text-xs">#{info.getValue()}</span>
-    }),
-    columnHelper.accessor('name', {
-      header: 'Product Name',
-      cell: (info) => <span className="font-bold text-white tracking-tight">{info.getValue()}</span>
-    }),
-    columnHelper.accessor('category', {
-      header: 'Category',
-      cell: (info) => (
-        <span className="inline-flex items-center gap-1 border border-zinc-800 bg-[#151515] px-2 py-0.5 text-[10px] font-mono text-zinc-400">
-          <Tag className="h-2.5 w-2.5" />
-          {info.getValue().toUpperCase()}
-        </span>
-      )
-    }),
-    columnHelper.accessor('price', {
-      header: 'Price',
-      cell: (info) => <span className="font-mono text-white font-bold">${info.getValue()}</span>
-    }),
-    columnHelper.accessor('stock', {
-      header: 'Stock',
-      cell: (info) => {
-        const stock = info.getValue()
-        return (
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-zinc-300 text-xs">{stock} pcs</span>
-            <div className="h-1 w-10 overflow-hidden bg-zinc-900 border border-zinc-800">
-              <div
-                className={`h-full transition-all ${
-                  stock > 5 ? 'bg-white' : stock > 0 ? 'bg-zinc-500' : 'bg-red-900'
-                }`}
-                style={{ width: `${Math.min((stock / 30) * 100, 100)}%` }}
-              />
-            </div>
-          </div>
-        )
-      }
-    }),
-    columnHelper.accessor('status', {
-      header: 'Status',
-      cell: (info) => {
-        const status = info.getValue()
-        const colors = {
-          'In Stock': 'bg-white/10 text-white border-white/20',
-          'Low Stock': 'bg-zinc-800 text-zinc-400 border-zinc-700',
-          'Out of Stock': 'bg-red-950/20 text-red-500 border-red-900/30'
-        }
-        return (
-          <span className={`inline-flex items-center border px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider ${colors[status]}`}>
-            {status}
-          </span>
-        )
-      }
-    }),
-    columnHelper.display({
-      id: 'actions',
-      header: 'Actions',
-      cell: (info) => {
-        const id = info.row.original.id
-        return (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                techWearCollection.update(id, (item) => {
-                  item.stock = Math.max(0, item.stock - 1)
-                  item.status = item.stock > 5 ? 'In Stock' : item.stock > 0 ? 'Low Stock' : 'Out of Stock'
-                })
-              }}
-              title="Sell 1 Unit"
-              className="border border-zinc-800 bg-zinc-900 p-1.5 text-zinc-400 hover:bg-white hover:text-black transition"
-            >
-              <Cpu className="h-3 w-3" />
-            </button>
-            <button
-              onClick={() => techWearCollection.delete(id)}
-              title="Delete Item"
-              className="border border-zinc-800 bg-zinc-900 p-1.5 text-red-500 hover:bg-red-900 hover:text-white transition"
-            >
-              <Trash className="h-3 w-3" />
-            </button>
-          </div>
-        )
-      }
-    })
-  ]
+  
+  // Manage pagination state (Performance Axis 3 Fix)
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 5
+  })
 
   const table = useReactTable({
     data: filteredItems,
     columns,
-    state: { sorting },
+    state: { sorting, pagination },
     onSortingChange: setSorting,
+    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel()
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel()
   })
 
   const form = useForm({
@@ -175,8 +187,15 @@ function Dashboard() {
     onSubmit: async ({ value }) => {
       const priceNum = Number(value.price) || 0
       const stockNum = Number(value.stock) || 0
+
+      // Secure bounds boundary validation check (Security Axis 1 Fix)
+      if (priceNum < 0 || stockNum < 0) {
+        alert('Validation Error: Price and stock values cannot be negative numbers.')
+        return
+      }
+
       const newItem: TechWearItem = {
-        id: Math.random().toString(36).substr(2, 9),
+        id: window.crypto.randomUUID ? window.crypto.randomUUID() : Math.random().toString(36).substring(2, 15), // Cryptographically secure ID (Security Axis 2 Fix)
         name: value.name,
         category: value.category,
         price: priceNum,
@@ -324,9 +343,9 @@ function Dashboard() {
                       <tr key={headerGroup.id} className="bg-zinc-900 border-b border-[var(--outline)] text-zinc-400">
                         {headerGroup.headers.map((header) => (
                           <th
-                            key={header.id}
-                            onClick={header.column.getToggleSortingHandler()}
-                            className="p-4 uppercase tracking-widest text-[10px] font-bold cursor-pointer select-none hover:text-white"
+                             key={header.id}
+                             onClick={header.column.getToggleSortingHandler()}
+                             className="p-4 uppercase tracking-widest text-[10px] font-bold cursor-pointer select-none hover:text-white"
                           >
                             <div className="flex items-center gap-1">
                               {flexRender(header.column.columnDef.header, header.getContext())}
@@ -358,6 +377,30 @@ function Dashboard() {
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination Controls Footer (Performance Axis 3 UI integration) */}
+              <div className="p-4 border-t border-[var(--outline)] flex justify-between items-center bg-[#151515] font-mono text-[10px]">
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => table.previousPage()}
+                    disabled={!table.getCanPreviousPage()}
+                    className="px-3 py-1.5 border border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-white hover:text-black hover:border-white disabled:opacity-30 disabled:hover:bg-zinc-900 disabled:hover:text-zinc-400 disabled:hover:border-zinc-800 transition"
+                  >
+                    PREVIOUS
+                  </button>
+                  <button
+                    onClick={() => table.nextPage()}
+                    disabled={!table.getCanNextPage()}
+                    className="px-3 py-1.5 border border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-white hover:text-black hover:border-white disabled:opacity-30 disabled:hover:bg-zinc-900 disabled:hover:text-zinc-400 disabled:hover:border-zinc-800 transition"
+                  >
+                    NEXT
+                  </button>
+                </div>
+                <span className="text-zinc-500 uppercase">
+                  PAGE {table.getState().pagination.pageIndex + 1} OF {table.getPageCount() || 1}
+                </span>
+              </div>
+
             </div>
           </section>
         </div>
@@ -395,6 +438,7 @@ function Dashboard() {
                       placeholder="e.g. DSTRKT-02 Thermal Vest"
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
+                      maxLength={120} // Unbounded input restriction (Security Axis 3 Fix)
                       className="w-full bg-[#161616] border border-zinc-800 text-white p-3 focus:outline-none focus:border-white"
                       required
                     />
@@ -431,6 +475,7 @@ function Dashboard() {
                       <input
                         type="number"
                         placeholder="290"
+                        min="0" // Front-end validation bounds (Security Axis 1 Fix)
                         value={field.state.value}
                         onChange={(e) => field.handleChange(e.target.value)}
                         className="w-full bg-[#161616] border border-zinc-800 text-white p-3 focus:outline-none focus:border-white"
@@ -447,6 +492,7 @@ function Dashboard() {
                       <input
                         type="number"
                         placeholder="15"
+                        min="0" // Front-end validation bounds (Security Axis 1 Fix)
                         value={field.state.value}
                         onChange={(e) => field.handleChange(e.target.value)}
                         className="w-full bg-[#161616] border border-zinc-800 text-white p-3 focus:outline-none focus:border-white"

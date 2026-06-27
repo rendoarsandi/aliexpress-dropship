@@ -3,5 +3,19 @@
   "name": "tanstack-start-app",
   "compatibility_date": "2025-09-02",
   "compatibility_flags": ["nodejs_compat"],
-  "main": "@tanstack/react-start/server-entry"
+  "main": "@tanstack/react-start/server-entry",
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "DB_DO",
+        "class_name": "DatabaseDO"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["DatabaseDO"]
+    }
+  ]
 }

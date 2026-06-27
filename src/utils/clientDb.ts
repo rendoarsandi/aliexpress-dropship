@@ -27,3 +27,25 @@ export const techWearCollection = createCollection(
 initialItems.forEach((item) => {
   techWearCollection.insert(item)
 })
+
+/**
+ * Shared filter helper to avoid duplicated business logic between routes and test suites
+ */
+export const filterSpecimens = (
+  items: TechWearItem[],
+  query: string,
+  category: string,
+  stock: string
+): TechWearItem[] => {
+  return items.filter((item) => {
+    const matchesSearch = item.name.toLowerCase().includes(query.toLowerCase())
+    const matchesCategory = category === 'All' || item.category === category
+    const matchesStock =
+      stock === 'all' ||
+      (stock === 'in-stock' && item.stock > 5) ||
+      (stock === 'low-stock' && item.stock > 0 && item.stock <= 5) ||
+      (stock === 'out-of-stock' && item.stock === 0)
+
+    return matchesSearch && matchesCategory && matchesStock
+  })
+}

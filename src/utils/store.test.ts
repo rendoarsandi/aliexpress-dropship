@@ -6,7 +6,7 @@ import {
   updateStockFilter,
   toggleCreateModal
 } from './store'
-import { initialItems } from './db'
+import { initialItems, filterSpecimens } from './clientDb'
 
 describe('DSTRKT Global Dashboard Store', () => {
   beforeEach(() => {
@@ -51,21 +51,6 @@ describe('DSTRKT Global Dashboard Store', () => {
   })
 
   test('should filter database items correctly using store state parameters', () => {
-    // Mock the same filtering logic implemented in src/routes/index.tsx
-    const filterSpecimens = (items: typeof initialItems, query: string, category: string, stock: string) => {
-      return items.filter((item) => {
-        const matchesSearch = item.name.toLowerCase().includes(query.toLowerCase())
-        const matchesCategory = category === 'All' || item.category === category
-        const matchesStock =
-          stock === 'all' ||
-          (stock === 'in-stock' && item.stock > 5) ||
-          (stock === 'low-stock' && item.stock > 0 && item.stock <= 5) ||
-          (stock === 'out-of-stock' && item.stock === 0)
-
-        return matchesSearch && matchesCategory && matchesStock
-      })
-    }
-
     // 1. Filter by search query "Ghost"
     const searchFiltered = filterSpecimens(initialItems, 'Ghost', 'All', 'all')
     expect(searchFiltered.length).toBe(1)
@@ -82,3 +67,4 @@ describe('DSTRKT Global Dashboard Store', () => {
     expect(stockFiltered[0].name).toBe('M-06 Cybernetic Cargo Pants')
   })
 })
+
