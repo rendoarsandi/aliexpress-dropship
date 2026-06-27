@@ -13,7 +13,7 @@ import {
   createColumnHelper
 } from '@tanstack/react-table'
 import type { SortingState } from '@tanstack/react-table'
-import { Plus, Trash, RotateCcw, ShieldCheck, Box, Search, Tag, Cpu } from 'lucide-react'
+import { Plus, Trash, Search, Tag, Cpu, PackageOpen } from 'lucide-react'
 
 import { techWearCollection } from '../utils/db'
 import type { TechWearItem } from '../utils/db'
@@ -24,25 +24,22 @@ import {
   updateStockFilter,
   toggleCreateModal
 } from '../utils/store'
-import type { DashboardState } from '../utils/store'
 
 export const Route = createFileRoute('/')({ component: Dashboard })
 
 const columnHelper = createColumnHelper<TechWearItem>()
 
 function Dashboard() {
-  // 1. TanStack Store: Get global dashboard state reactively
   const searchQuery = useStore(dashboardStore, (s) => s.searchQuery)
   const selectedCategory = useStore(dashboardStore, (s) => s.selectedCategory)
   const stockFilter = useStore(dashboardStore, (s) => s.stockFilter)
   const isCreateModalOpen = useStore(dashboardStore, (s) => s.isCreateModalOpen)
 
-  // 2. TanStack Query: Fetch server-side statistics mock with cache
-  const { data: stats, isLoading: isStatsLoading } = useQuery({
+  // Fetch mock server-side statistics
+  const { data: stats } = useQuery({
     queryKey: ['storeStats'],
     queryFn: async () => {
-      // Simulate API call latency
-      await new Promise((resolve) => setTimeout(resolve, 800))
+      await new Promise((resolve) => setTimeout(resolve, 300))
       return {
         activeUsers: 184,
         hourlySales: '1.48 ETH',
@@ -52,10 +49,9 @@ function Dashboard() {
     }
   })
 
-  // 3. TanStack DB: Subscribe to local collection reactively via Live Query
+  // Subscribe to TanStack DB Live Queries
   const { data: rawItems = [] } = useLiveQuery((q) => q.from({ items: techWearCollection }))
 
-  // Filter items in memory using TanStack Store filter parameters
   const filteredItems = rawItems.filter((item) => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory
@@ -68,7 +64,6 @@ function Dashboard() {
     return matchesSearch && matchesCategory && matchesStock
   })
 
-  // 4. TanStack Table: Client-side sorting and column headers state
   const [sorting, setSorting] = useState<SortingState>([])
 
   const columns = [
@@ -78,20 +73,20 @@ function Dashboard() {
     }),
     columnHelper.accessor('name', {
       header: 'Product Name',
-      cell: (info) => <span className="font-semibold text-zinc-100">{info.getValue()}</span>
+      cell: (info) => <span className="font-bold text-white tracking-tight">{info.getValue()}</span>
     }),
     columnHelper.accessor('category', {
       header: 'Category',
       cell: (info) => (
-        <span className="inline-flex items-center gap-1 rounded bg-zinc-800/80 px-2 py-0.5 text-xs text-zinc-300">
-          <Tag className="h-3 w-3" />
-          {info.getValue()}
+        <span className="inline-flex items-center gap-1 border border-zinc-800 bg-[#151515] px-2 py-0.5 text-[10px] font-mono text-zinc-400">
+          <Tag className="h-2.5 w-2.5" />
+          {info.getValue().toUpperCase()}
         </span>
       )
     }),
     columnHelper.accessor('price', {
       header: 'Price',
-      cell: (info) => <span className="font-mono text-cyan-400 font-medium">${info.getValue()}</span>
+      cell: (info) => <span className="font-mono text-white font-bold">${info.getValue()}</span>
     }),
     columnHelper.accessor('stock', {
       header: 'Stock',
@@ -99,11 +94,11 @@ function Dashboard() {
         const stock = info.getValue()
         return (
           <div className="flex items-center gap-2">
-            <span className="font-mono text-zinc-100">{stock} units</span>
-            <div className="h-1.5 w-12 overflow-hidden rounded bg-zinc-800">
+            <span className="font-mono text-zinc-300 text-xs">{stock} pcs</span>
+            <div className="h-1 w-10 overflow-hidden bg-zinc-900 border border-zinc-800">
               <div
-                className={`h-full rounded transition-all ${
-                  stock > 5 ? 'bg-emerald-500' : stock > 0 ? 'bg-amber-500' : 'bg-rose-500'
+                className={`h-full transition-all ${
+                  stock > 5 ? 'bg-white' : stock > 0 ? 'bg-zinc-500' : 'bg-red-900'
                 }`}
                 style={{ width: `${Math.min((stock / 30) * 100, 100)}%` }}
               />
@@ -117,12 +112,12 @@ function Dashboard() {
       cell: (info) => {
         const status = info.getValue()
         const colors = {
-          'In Stock': 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-          'Low Stock': 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-          'Out of Stock': 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+          'In Stock': 'bg-white/10 text-white border-white/20',
+          'Low Stock': 'bg-zinc-800 text-zinc-400 border-zinc-700',
+          'Out of Stock': 'bg-red-950/20 text-red-500 border-red-900/30'
         }
         return (
-          <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${colors[status]}`}>
+          <span className={`inline-flex items-center border px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider ${colors[status]}`}>
             {status}
           </span>
         )
@@ -143,16 +138,16 @@ function Dashboard() {
                 })
               }}
               title="Sell 1 Unit"
-              className="rounded bg-zinc-800 p-1.5 text-zinc-400 hover:bg-zinc-700 hover:text-white transition"
+              className="border border-zinc-800 bg-zinc-900 p-1.5 text-zinc-400 hover:bg-white hover:text-black transition"
             >
-              <Cpu className="h-3.5 w-3.5" />
+              <Cpu className="h-3 w-3" />
             </button>
             <button
               onClick={() => techWearCollection.delete(id)}
               title="Delete Item"
-              className="rounded bg-zinc-800 p-1.5 text-rose-400 hover:bg-rose-900/40 hover:text-rose-200 transition"
+              className="border border-zinc-800 bg-zinc-900 p-1.5 text-red-500 hover:bg-red-900 hover:text-white transition"
             >
-              <Trash className="h-3.5 w-3.5" />
+              <Trash className="h-3 w-3" />
             </button>
           </div>
         )
@@ -170,7 +165,6 @@ function Dashboard() {
     getFilteredRowModel: getFilteredRowModel()
   })
 
-  // 5. TanStack Form: Type-safe form validation for adding new Tech Wear product
   const form = useForm({
     defaultValues: {
       name: '',
@@ -182,7 +176,7 @@ function Dashboard() {
       const priceNum = Number(value.price) || 0
       const stockNum = Number(value.stock) || 0
       const newItem: TechWearItem = {
-        id: (rawItems.length + 1).toString(),
+        id: Math.random().toString(36).substr(2, 9),
         name: value.name,
         category: value.category,
         price: priceNum,
@@ -190,7 +184,6 @@ function Dashboard() {
         status: stockNum > 5 ? 'In Stock' : stockNum > 0 ? 'Low Stock' : 'Out of Stock'
       }
 
-      // Mutation inside TanStack DB Collection
       techWearCollection.insert(newItem)
       form.reset()
       toggleCreateModal(false)
@@ -198,235 +191,191 @@ function Dashboard() {
   })
 
   return (
-    <main className="min-h-screen px-4 pb-16 pt-20 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      {/* Glow Backdrops */}
-      <div className="absolute top-24 left-1/4 -z-10 h-72 w-72 rounded-full bg-cyan-500/10 blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-24 right-1/4 -z-10 h-72 w-72 rounded-full bg-indigo-500/10 blur-[100px] pointer-events-none" />
-
-      {/* Title Header Section */}
-      <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8 border-b border-zinc-800 pb-6">
-        <div>
-          <span className="text-xs font-mono tracking-[0.2em] text-cyan-400 uppercase">DSTRKT System 24/25</span>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl mt-1">Stock & Inventory Dashboard</h1>
-          <p className="text-sm text-zinc-400 mt-2">
-            A cohesive real-time showcase of all TanStack libraries running natively on a Cloudflare target environment.
-          </p>
+    <main className="bg-[#0a0a0a] min-h-screen text-[var(--on-surface)] overflow-x-hidden pt-20">
+      
+      {/* Dynamic Dark Hero Banner */}
+      <section className="relative h-[65vh] w-full flex items-center overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img
+            alt="Hero Background"
+            className="w-full h-full object-cover object-center grayscale brightness-50 opacity-80"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmnRYHHuW7-gajfMPu9lajgyeQwbMEsMMDw3MDEPUlqA0YkCKNRfA-N5o6Iw01LdqxSgvbGHzn7ZCk2TkghqjWS6E2Nn-yDUaP7u1X63Xwc3W0muynJ_UlZiKFmvOZ2BtUYbPVshCkdf9asobmWPq1PmmDxpbO2nE9ze62uqfdJfG5yxM1MeYhGy03Vwi48B-pfkAGE9P-Yr_oQsN3J-o7T8Ti87k-t5WVV4b67qnMf3PjJN5O6bzg_dgAUhtfhzGq4psiGHrqFSQ"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/60 to-transparent"></div>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3.5 py-1 text-xs text-emerald-400 font-mono">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            Cloudflare Deployment Active
-          </span>
+        <div className="relative z-10 px-8 w-full max-w-[1440px] mx-auto">
+          <span className="text-[11px] font-mono tracking-[0.3em] text-white/60 mb-2 block uppercase">DSTRKT UTILITY CONTROL</span>
+          <h1 className="font-display font-extrabold text-5xl lg:text-7xl leading-none text-white uppercase tracking-tight max-w-2xl mb-8">
+            SYSTEM CONTROL PANEL
+          </h1>
           <button
-            onClick={() => {
-              // Reset TanStack DB with Initial items
-              rawItems.forEach((it) => techWearCollection.delete(it.id))
-              initialItems.forEach((it) => techWearCollection.insert(it))
-            }}
-            className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900 px-3.5 py-2 text-xs font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white transition"
+            onClick={() => toggleCreateModal(true)}
+            className="bg-white text-black font-mono text-xs tracking-widest px-8 py-4 hover:bg-zinc-200 transition font-bold"
           >
-            <RotateCcw className="h-3.5 w-3.5" />
-            Reset DB
+            ADD INVENTORY ITEM
           </button>
-        </div>
-      </header>
-
-      {/* TanStack Query Section: Market Indicators */}
-      <section className="mb-10">
-        <h2 className="text-xs font-mono tracking-wider text-zinc-400 uppercase mb-4 flex items-center gap-1.5">
-          <ShieldCheck className="h-4 w-4 text-cyan-400" />
-          Server Cache Indicators (via TanStack Query)
-        </h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {isStatsLoading ? (
-            Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="animate-pulse rounded-xl border border-zinc-800 bg-zinc-900/60 p-5 h-[100px]" />
-            ))
-          ) : (
-            <>
-              <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/40 backdrop-blur-md p-5 transition hover:border-zinc-700/80">
-                <p className="text-xs font-medium text-zinc-400">Hourly Market Volume</p>
-                <p className="text-2xl font-bold font-mono text-zinc-100 mt-2">{stats?.hourlySales}</p>
-              </div>
-              <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/40 backdrop-blur-md p-5 transition hover:border-zinc-700/80">
-                <p className="text-xs font-medium text-zinc-400">Concurrent Visitors</p>
-                <p className="text-2xl font-bold font-mono text-cyan-400 mt-2">{stats?.activeUsers}</p>
-              </div>
-              <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/40 backdrop-blur-md p-5 transition hover:border-zinc-700/80">
-                <p className="text-xs font-medium text-zinc-400">Cart Conversion Rate</p>
-                <p className="text-2xl font-bold font-mono text-indigo-400 mt-2">{stats?.conversionRate}</p>
-              </div>
-              <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/40 backdrop-blur-md p-5 transition hover:border-zinc-700/80">
-                <p className="text-xs font-medium text-zinc-400">Network Edge Node</p>
-                <p className="text-sm font-semibold font-mono text-emerald-400 mt-3 truncate">{stats?.cloudflareStatus}</p>
-              </div>
-            </>
-          )}
         </div>
       </section>
 
-      {/* Main Panel Section */}
-      <div className="grid gap-8 lg:grid-cols-4">
-        {/* Filters Panel (TanStack Store Controller) */}
-        <aside className="lg:col-span-1 space-y-6">
-          <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/30 p-6 backdrop-blur-md">
-            <h2 className="text-sm font-bold text-zinc-100 mb-4 flex items-center gap-1.5">
-              <Search className="h-4 w-4 text-cyan-400" />
-              Store Controls
-            </h2>
-            
-            {/* Input Search */}
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs text-zinc-400 mb-1.5 font-medium">Search Products</label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => updateSearchQuery(e.target.value)}
-                    placeholder="Filter by name..."
-                    className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 pl-9 text-sm text-zinc-100 placeholder-zinc-600 focus:border-cyan-500 focus:outline-none transition"
-                  />
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-zinc-600" />
-                </div>
-              </div>
-
-              {/* Category Filter */}
-              <div>
-                <label className="block text-xs text-zinc-400 mb-1.5 font-medium">Category</label>
-                <div className="flex flex-col gap-1">
-                  {['All', 'Jackets', 'Pants', 'Accessories', 'Underwear', 'Footwear'].map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => updateCategory(cat)}
-                      className={`text-left rounded px-3 py-1.5 text-xs font-medium transition ${
-                        selectedCategory === cat
-                          ? 'bg-cyan-500/10 text-cyan-400 border-l-2 border-cyan-500'
-                          : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Stock Filter */}
-              <div>
-                <label className="block text-xs text-zinc-400 mb-1.5 font-medium">Stock Status</label>
-                <select
-                  value={stockFilter}
-                  onChange={(e) => updateStockFilter(e.target.value as DashboardState['stockFilter'])}
-                  className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 focus:border-cyan-500 focus:outline-none transition"
-                >
-                  <option value="all">All Inventory</option>
-                  <option value="in-stock">In Stock (&gt;5 units)</option>
-                  <option value="low-stock">Low Stock (1-5 units)</option>
-                  <option value="out-of-stock">Out of Stock (0 units)</option>
-                </select>
-              </div>
-            </div>
+      {/* Marquee Banner */}
+      <div className="w-full h-12 bg-[#0f0f0f] border-y border-[var(--outline)] flex items-center px-8 overflow-hidden">
+        <div className="flex items-center gap-6 overflow-hidden w-full">
+          <span className="font-mono text-xs text-white tracking-widest uppercase shrink-0">LOG ALERT:</span>
+          <div className="animate-marquee whitespace-nowrap font-mono text-xs text-zinc-500 uppercase tracking-widest">
+            <span>DSTRKT // SYSTEM v2.4 ACTIVATED — COLD FABRIC TEXTURES IN STOCK — SYSTEM STATUS OPERATIONAL — REACTIVE STREAM LIVE — </span>
+            <span>DSTRKT // SYSTEM v2.4 ACTIVATED — COLD FABRIC TEXTURES IN STOCK — SYSTEM STATUS OPERATIONAL — REACTIVE STREAM LIVE — </span>
           </div>
-        </aside>
-
-        {/* Inventory Table (TanStack Table & DB) */}
-        <section className="lg:col-span-3 space-y-6">
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/20 backdrop-blur-md overflow-hidden">
-            <div className="flex items-center justify-between border-b border-zinc-800 px-6 py-4">
-              <div className="flex items-center gap-2">
-                <Box className="h-5 w-5 text-cyan-400" />
-                <h2 className="font-bold text-zinc-100">Live DB Products ({filteredItems.length})</h2>
-              </div>
-              <button
-                onClick={() => toggleCreateModal(true)}
-                className="flex items-center gap-1 rounded-lg bg-cyan-500 px-4 py-2 text-xs font-semibold text-zinc-950 hover:bg-cyan-400 transition"
-              >
-                <Plus className="h-4 w-4" />
-                New Product
-              </button>
-            </div>
-
-            {/* Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-left text-sm">
-                <thead>
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <tr key={headerGroup.id} className="border-b border-zinc-800/80 bg-zinc-900/40 text-xs font-mono uppercase tracking-wider text-zinc-400">
-                      {headerGroup.headers.map((header) => (
-                        <th
-                          key={header.id}
-                          className="px-6 py-3 font-semibold select-none cursor-pointer hover:text-cyan-400 transition"
-                          onClick={header.column.getToggleSortingHandler()}
-                        >
-                          <div className="flex items-center gap-1">
-                            {flexRender(header.column.columnDef.header, header.getContext())}
-                            {header.column.getIsSorted() === 'asc' ? ' 🔼' : header.column.getIsSorted() === 'desc' ? ' 🔽' : ''}
-                          </div>
-                        </th>
-                      ))}
-                    </tr>
-                  ))}
-                </thead>
-                <tbody className="divide-y divide-zinc-800/60">
-                  {filteredItems.length === 0 ? (
-                    <tr>
-                      <td colSpan={columns.length} className="px-6 py-12 text-center text-zinc-500">
-                        No products match the selected criteria. Try adjusting your search or filters.
-                      </td>
-                    </tr>
-                  ) : (
-                    table.getRowModel().rows.map((row) => (
-                      <tr key={row.id} className="hover:bg-zinc-800/20 transition-all">
-                        {row.getVisibleCells().map((cell) => (
-                          <td key={cell.id} className="px-6 py-4 align-middle">
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                          </td>
-                        ))}
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
+        </div>
       </div>
 
-      {/* Bottom Documentation Card */}
-      <footer className="mt-12 rounded-2xl border border-zinc-800/60 bg-gradient-to-r from-zinc-950/80 to-zinc-900/30 p-6 md:p-8 backdrop-blur-md">
-        <h3 className="font-bold text-zinc-100 flex items-center gap-2 mb-4 text-base">
-          <Cpu className="h-5 w-5 text-cyan-400" />
-          Technical Showcase: Suite of 9 Integrated TanStack Libraries
-        </h3>
-        <p className="text-zinc-400 text-sm mb-6 max-w-3xl leading-relaxed">
-          This system architecture unites 9 core TanStack tools into a unified, lightweight package, proving that TanStack is a comprehensive, production-grade ecosystem. Here's how each library is demonstrated in real-time above:
-        </p>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {[
-            ['TanStack Start', 'Orchestrates Server-Side Rendering (SSR), asset pipelines, and hydrations natively targeting Cloudflare.'],
-            ['TanStack Router', 'Declares fully type-safe layout bounds and clients-side hydration links for responsive screen flows.'],
-            ['TanStack DB', 'Maintains a reactive in-memory collection (`techWearCollection`). Performs live queries using the `useLiveQuery` hook.'],
-            ['TanStack Query', 'Fetches mock hourly sales, concurrent traffic, and node health from edge APIs with cache invalidations.'],
-            ['TanStack Store', 'Shares and coordinates the global filters, categories, and sidebar search across separate modular views.'],
-            ['TanStack Table', 'Provides column declarations, sort configurations, and reactive grid outputs based on active query arrays.'],
-            ['TanStack Form', 'Validates local forms (product insertions) with robust touch indicators and type-safe schema constraints.'],
-            ['TanStack CLI', 'Bootstrapped the blank template, wired up custom presets, and initialized workspace directories.'],
-            ['TanStack Intent', 'Injected persistent instructions to let the coding agent accurately align with library-shipped specifications.']
-          ].map(([libName, desc]) => (
-            <div key={libName} className="rounded-lg border border-zinc-900 bg-zinc-950/40 p-4 transition hover:border-zinc-800">
-              <span className="font-mono text-xs text-cyan-400 font-bold uppercase">{libName}</span>
-              <p className="text-zinc-500 text-xs mt-1.5 leading-relaxed">{desc}</p>
+      <div className="max-w-[1440px] mx-auto px-8 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          {/* Sticky Left Sidebar Filters */}
+          <aside className="lg:col-span-3 border border-[var(--outline)] bg-[#111111] p-6 h-fit lg:sticky lg:top-24">
+            <h3 className="font-display text-lg font-bold text-white uppercase tracking-tight mb-6">FILTERS</h3>
+            
+            {/* Search Input */}
+            <div className="relative mb-6">
+              <Search className="absolute left-3 top-3.5 h-3.5 w-3.5 text-zinc-500" />
+              <input
+                type="text"
+                placeholder="SEARCH SPECIMEN..."
+                value={searchQuery}
+                onChange={(e) => updateSearchQuery(e.target.value)}
+                className="w-full bg-[#161616] border border-zinc-800 text-white font-mono text-xs pl-9 pr-4 py-3 placeholder-zinc-600 focus:outline-none focus:border-zinc-500"
+              />
             </div>
-          ))}
-        </div>
-      </footer>
 
-      {/* 6. Form Drawer Modal Backdrop */}
+            {/* Category selection */}
+            <div className="mb-6">
+              <label className="text-[10px] font-mono tracking-widest text-zinc-500 block mb-2 uppercase">CATEGORY</label>
+              <div className="flex flex-col gap-1 text-xs">
+                {['All', 'Jackets', 'Pants', 'Accessories', 'Underwear', 'Footwear'].map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => updateCategory(cat)}
+                    className={`text-left px-3 py-2 font-mono uppercase tracking-wider transition ${
+                      selectedCategory === cat ? 'bg-white text-black font-bold' : 'text-zinc-400 hover:bg-zinc-900'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Stock status filters */}
+            <div>
+              <label className="text-[10px] font-mono tracking-widest text-zinc-500 block mb-2 uppercase">STOCK AVAILABILITY</label>
+              <div className="flex flex-col gap-1 text-xs">
+                {[
+                  { id: 'all', label: 'ALL LEVELS' },
+                  { id: 'in-stock', label: 'IN STOCK (>5)' },
+                  { id: 'low-stock', label: 'CRITICAL LOW (1-5)' },
+                  { id: 'out-of-stock', label: 'DEPLETED (0)' }
+                ].map((st) => (
+                  <button
+                    key={st.id}
+                    onClick={() => updateStockFilter(st.id as any)}
+                    className={`text-left px-3 py-2 font-mono uppercase tracking-wider transition ${
+                      stockFilter === st.id ? 'bg-white text-black font-bold' : 'text-zinc-400 hover:bg-zinc-900'
+                    }`}
+                  >
+                    {st.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </aside>
+
+          {/* Right Inventory Table */}
+          <section className="lg:col-span-9 space-y-6">
+            
+            {/* Server-side Stats Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                { label: 'ACTIVE MONITOR', value: stats?.activeUsers ? `${stats.activeUsers} ENGAGED` : 'LOADING...' },
+                { label: 'VOLUME STREAM', value: stats?.hourlySales || 'LOADING...' },
+                { label: 'RATIO COEFFICIENT', value: stats?.conversionRate || 'LOADING...' },
+                { label: 'CLOUD NODE', value: stats?.cloudflareStatus || 'LOADING...' }
+              ].map((st, idx) => (
+                <div key={idx} className="border border-[var(--outline)] bg-[#111111] p-4">
+                  <span className="text-[9px] font-mono tracking-wider text-zinc-500 block mb-1 uppercase">{st.label}</span>
+                  <span className="font-mono text-sm font-bold text-white uppercase">{st.value}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Inventory Listing Tabular Content */}
+            <div className="border border-[var(--outline)] bg-[#111111]">
+              <div className="p-4 border-b border-[var(--outline)] flex justify-between items-center bg-[#151515]">
+                <div className="flex items-center gap-2">
+                  <PackageOpen className="h-4 w-4 text-white" />
+                  <span className="font-mono text-xs tracking-widest text-white font-bold uppercase">INVENTORY DATABASE MODULE</span>
+                </div>
+                <span className="font-mono text-[10px] text-zinc-500">{filteredItems.length} RECORDED ENTRIES</span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left font-mono text-xs border-collapse">
+                  <thead>
+                    {table.getHeaderGroups().map((headerGroup) => (
+                      <tr key={headerGroup.id} className="bg-zinc-900 border-b border-[var(--outline)] text-zinc-400">
+                        {headerGroup.headers.map((header) => (
+                          <th
+                            key={header.id}
+                            onClick={header.column.getToggleSortingHandler()}
+                            className="p-4 uppercase tracking-widest text-[10px] font-bold cursor-pointer select-none hover:text-white"
+                          >
+                            <div className="flex items-center gap-1">
+                              {flexRender(header.column.columnDef.header, header.getContext())}
+                              {header.column.getIsSorted() === 'asc' ? ' ↑' : header.column.getIsSorted() === 'desc' ? ' ↓' : ''}
+                            </div>
+                          </th>
+                        ))}
+                      </tr>
+                    ))}
+                  </thead>
+                  <tbody>
+                    {filteredItems.length > 0 ? (
+                      table.getRowModel().rows.map((row) => (
+                        <tr key={row.id} className="border-b border-[var(--outline)] hover:bg-zinc-900/50 transition">
+                          {row.getVisibleCells().map((cell) => (
+                            <td key={cell.id} className="p-4 align-middle">
+                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </td>
+                          ))}
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={columns.length} className="text-center py-12 text-zinc-500 font-mono">
+                          NO ACTIVE SPECIMENS DETECTED IN STORAGE FOR FILTER CRITERIA
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      {/* Creation Modal System (DSTRKT Sharp Underlays) */}
       {isCreateModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="relative w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-900 p-6 md:p-8 shadow-2xl">
-            <h3 className="text-lg font-bold text-zinc-100 mb-2">Register Inventory Item</h3>
-            <p className="text-xs text-zinc-400 mb-6">Create a product inside the live TanStack DB reactive collection.</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md px-4">
+          <div className="w-full max-w-md border border-white bg-[#111111] p-8">
+            <div className="flex justify-between items-center mb-6 pb-4 border-b border-zinc-800">
+              <h3 className="font-display text-lg font-extrabold text-white uppercase tracking-tight">ADD NEW SPECIMEN</h3>
+              <button
+                onClick={() => toggleCreateModal(false)}
+                className="text-zinc-500 hover:text-white font-mono text-xs uppercase"
+              >
+                [CLOSE]
+              </button>
+            </div>
 
             <form
               onSubmit={(e) => {
@@ -434,115 +383,86 @@ function Dashboard() {
                 e.stopPropagation()
                 form.handleSubmit()
               }}
-              className="space-y-4"
+              className="space-y-4 font-mono text-xs text-white"
             >
-              {/* Product Name Field */}
-              <form.Field
-                name="name"
-                validators={{
-                  onChange: ({ value }) => (!value ? 'Product name is required' : value.length < 3 ? 'Name must be at least 3 chars' : undefined)
-                }}
-              >
-                {(field) => (
-                  <div>
-                    <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Product Name</label>
+              <div>
+                <label className="text-[10px] tracking-widest text-zinc-500 block mb-1 uppercase">PRODUCT IDENTIFIER</label>
+                <form.Field
+                  name="name"
+                  children={(field) => (
                     <input
+                      type="text"
+                      placeholder="e.g. DSTRKT-02 Thermal Vest"
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
-                      placeholder="e.g. O-03 Obsidian Cap"
-                      className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3.5 py-2 text-sm text-zinc-100 focus:border-cyan-500 focus:outline-none transition"
+                      className="w-full bg-[#161616] border border-zinc-800 text-white p-3 focus:outline-none focus:border-white"
+                      required
                     />
-                    {field.state.meta.isTouched && field.state.meta.errors.length ? (
-                      <p className="text-xs text-rose-400 mt-1 font-mono">{field.state.meta.errors.join(', ')}</p>
-                    ) : null}
-                  </div>
-                )}
-              </form.Field>
+                  )}
+                />
+              </div>
 
-              {/* Category Field */}
-              <form.Field name="category">
-                {(field) => (
-                  <div>
-                    <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Category</label>
+              <div>
+                <label className="text-[10px] tracking-widest text-zinc-500 block mb-1 uppercase">CATEGORY TYPE</label>
+                <form.Field
+                  name="category"
+                  children={(field) => (
                     <select
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
-                      className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3.5 py-2 text-sm text-zinc-100 focus:border-cyan-500 focus:outline-none transition"
+                      className="w-full bg-[#161616] border border-zinc-800 text-white p-3 focus:outline-none focus:border-white"
                     >
-                      <option value="Jackets">Jackets</option>
-                      <option value="Pants">Pants</option>
-                      <option value="Accessories">Accessories</option>
-                      <option value="Underwear">Underwear</option>
-                      <option value="Footwear">Footwear</option>
+                      {['Jackets', 'Pants', 'Accessories', 'Underwear', 'Footwear'].map((cat) => (
+                        <option key={cat} value={cat} className="bg-[#111111]">
+                          {cat.toUpperCase()}
+                        </option>
+                      ))}
                     </select>
-                  </div>
-                )}
-              </form.Field>
+                  )}
+                />
+              </div>
 
               <div className="grid grid-cols-2 gap-4">
-                {/* Price Field */}
-                <form.Field
-                  name="price"
-                  validators={{
-                    onChange: ({ value }) => (!value ? 'Required' : isNaN(Number(value)) ? 'Must be a number' : undefined)
-                  }}
-                >
-                  {(field) => (
-                    <div>
-                      <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Price ($)</label>
+                <div>
+                  <label className="text-[10px] tracking-widest text-zinc-500 block mb-1 uppercase">PRICE ($ USD)</label>
+                  <form.Field
+                    name="price"
+                    children={(field) => (
                       <input
+                        type="number"
+                        placeholder="290"
                         value={field.state.value}
                         onChange={(e) => field.handleChange(e.target.value)}
-                        placeholder="299"
-                        className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3.5 py-2 text-sm text-zinc-100 focus:border-cyan-500 focus:outline-none transition"
+                        className="w-full bg-[#161616] border border-zinc-800 text-white p-3 focus:outline-none focus:border-white"
+                        required
                       />
-                      {field.state.meta.isTouched && field.state.meta.errors.length ? (
-                        <p className="text-xs text-rose-400 mt-1 font-mono">{field.state.meta.errors.join(', ')}</p>
-                      ) : null}
-                    </div>
-                  )}
-                </form.Field>
-
-                {/* Stock Field */}
-                <form.Field
-                  name="stock"
-                  validators={{
-                    onChange: ({ value }) => (!value ? 'Required' : isNaN(Number(value)) ? 'Must be a number' : undefined)
-                  }}
-                >
-                  {(field) => (
-                    <div>
-                      <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Stock Count</label>
+                    )}
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] tracking-widest text-zinc-500 block mb-1 uppercase">INITIAL UNITS</label>
+                  <form.Field
+                    name="stock"
+                    children={(field) => (
                       <input
+                        type="number"
+                        placeholder="15"
                         value={field.state.value}
                         onChange={(e) => field.handleChange(e.target.value)}
-                        placeholder="10"
-                        className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3.5 py-2 text-sm text-zinc-100 focus:border-cyan-500 focus:outline-none transition"
+                        className="w-full bg-[#161616] border border-zinc-800 text-white p-3 focus:outline-none focus:border-white"
+                        required
                       />
-                      {field.state.meta.isTouched && field.state.meta.errors.length ? (
-                        <p className="text-xs text-rose-400 mt-1 font-mono">{field.state.meta.errors.join(', ')}</p>
-                      ) : null}
-                    </div>
-                  )}
-                </form.Field>
+                    )}
+                  />
+                </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex items-center justify-end gap-3 mt-8">
-                <button
-                  type="button"
-                  onClick={() => toggleCreateModal(false)}
-                  className="rounded-lg border border-zinc-800 bg-transparent px-4 py-2 text-xs font-semibold text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="rounded-lg bg-cyan-500 px-5 py-2 text-xs font-semibold text-zinc-950 hover:bg-cyan-400 transition"
-                >
-                  Save Product
-                </button>
-              </div>
+              <button
+                type="submit"
+                className="w-full bg-white text-black font-bold tracking-widest py-4 mt-6 hover:bg-zinc-200 transition uppercase"
+              >
+                COMMIT SPECIMEN TO DATABASE
+              </button>
             </form>
           </div>
         </div>
