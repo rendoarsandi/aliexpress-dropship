@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DSTRKT // URBAN UTILITY</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&amp;family=Geist:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #343535; }
+        .glitch-hover:hover {
+            text-shadow: 2px 0 #fff, -2px 0 #ff0000;
+            transition: all 0.2s;
+        }
+        .vertical-text {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-container": "#636565",
+                        "secondary-container": "#4a4949",
+                        "background": "#0a0a0a",
+                        "secondary-fixed-dim": "#c9c6c5",
+                        "surface-container-low": "#1b1c1c",
+                        "on-tertiary-fixed": "#1c1b1b",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "surface-tint": "#c6c6c7",
+                        "primary-fixed-dim": "#c6c6c7",
+                        "on-secondary-container": "#bab8b7",
+                        "surface-variant": "#343535",
+                        "inverse-primary": "#5d5f5f",
+                        "on-surface": "#e3e2e2",
+                        "on-background": "#e3e2e2",
+                        "error-container": "#93000a",
+                        "inverse-on-surface": "#303031",
+                        "tertiary-fixed-dim": "#c8c6c5",
+                        "tertiary": "#ffffff",
+                        "on-surface-variant": "#c4c7c8",
+                        "surface-container-lowest": "#0d0e0f",
+                        "on-primary-fixed": "#1a1c1c",
+                        "on-tertiary-container": "#656464",
+                        "primary-container": "#e2e2e2",
+                        "surface-container-high": "#292a2a",
+                        "secondary": "#c9c6c5",
+                        "on-error-container": "#ffdad6",
+                        "surface-dim": "#121414",
+                        "on-secondary-fixed-variant": "#474646",
+                        "surface-container-highest": "#343535",
+                        "primary-fixed": "#e2e2e2",
+                        "on-tertiary": "#313030",
+                        "error": "#ffb4ab",
+                        "on-secondary": "#313030",
+                        "tertiary-container": "#e5e2e1",
+                        "outline": "#8e9192",
+                        "surface": "#121414",
+                        "on-error": "#690005",
+                        "on-primary-fixed-variant": "#454747",
+                        "secondary-fixed": "#e5e2e1",
+                        "tertiary-fixed": "#e5e2e1",
+                        "outline-variant": "#444748",
+                        "surface-bright": "#383939",
+                        "on-primary": "#2f3131",
+                        "primary": "#ffffff",
+                        "inverse-surface": "#e3e2e2",
+                        "on-tertiary-fixed-variant": "#474646",
+                        "surface-container": "#1f2020"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "gutter": "1px",
+                        "container-max": "1440px",
+                        "margin-desktop": "40px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "label-sm-caps": ["Geist"],
+                        "headline-lg": ["Sora"],
+                        "display-2xl": ["Sora"],
+                        "body-md": ["Geist"],
+                        "headline-lg-mobile": ["Sora"]
+                    },
+                    "fontSize": {
+                        "label-sm-caps": ["11px", {"lineHeight": "16px", "letterSpacing": "0.2em", "fontWeight": "600"}],
+                        "headline-lg": ["48px", {"lineHeight": "52px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "display-2xl": ["96px", {"lineHeight": "90px", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["32px", {"lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background selection:bg-primary selection:text-background overflow-x-hidden">
+<!-- Section 1: Header (TopNavBar) -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-margin-desktop h-20 bg-background/80 backdrop-blur-xl border-b border-outline-variant">
+<div class="flex items-center gap-12">
+<a class="font-headline-lg text-headline-lg font-bold tracking-tighter text-primary" href="#">DSTRKT</a>
+<nav class="hidden md:flex items-center gap-8">
+<a class="font-label-sm-caps text-label-sm-caps text-primary border-b border-primary pb-1 transition-colors duration-300" href="#">SHOP</a>
+<a class="font-label-sm-caps text-label-sm-caps text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">COLLECTION</a>
+<a class="font-label-sm-caps text-label-sm-caps text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">LOOKBOOK</a>
+<a class="font-label-sm-caps text-label-sm-caps text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">ABOUT</a>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden lg:flex items-center gap-4 border-r border-outline-variant pr-6">
+<span class="font-label-sm-caps text-label-sm-caps text-primary">KR</span>
+<button class="material-symbols-outlined text-primary text-[20px]">search</button>
+<button class="material-symbols-outlined text-primary text-[20px]">person</button>
+</div>
+<button class="flex items-center gap-2 group">
+<span class="material-symbols-outlined text-primary text-[24px]">shopping_bag</span>
+<span class="font-label-sm-caps text-label-sm-caps text-primary">(0)</span>
+</button>
+</div>
+</header>
+<!-- Section 2: Hero (85vh) -->
+<section class="relative h-[85vh] w-full flex items-center overflow-hidden pt-20">
+<!-- Background with image -->
+<div class="absolute inset-0 z-0">
+<img alt="Hero Background" class="w-full h-full object-cover object-center" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmnRYHHuW7-gajfMPu9lajgyeQwbMEsMMDw3MDEPUlqA0YkCKNRfA-N5o6Iw01LdqxSgvbGHzn7ZCk2TkghqjWS6E2Nn-yDUaP7u1X63Xwc3W0muynJ_UlZiKFmvOZ2BtUYbPVshCkdf9asobmWPq1PmmDxpbO2nE9ze62uqfdJfG5yxM1MeYhGy03Vwi48B-pfkAGE9P-Yr_oQsN3J-o7T8Ti87k-t5WVV4b67qnMf3PjJN5O6bzg_dgAUhtfhzGq4psiGHrqFSQ"/>
+<div class="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent"></div>
+</div>
+<!-- Content -->
+<div class="relative z-10 px-margin-desktop w-full max-w-container-max mx-auto grid grid-cols-12 gap-gutter">
+<div class="col-span-12 md:col-span-8 flex flex-col justify-center">
+<span class="font-label-sm-caps text-label-sm-caps text-primary mb-4 block tracking-[0.3em]">도시의 언어, 우리만의 방식</span>
+<h1 class="font-display-2xl text-[clamp(48px,8vw,96px)] leading-[0.95] text-primary mb-10 max-w-4xl">
+                    정체성은<br/>스타일이다
+                </h1>
+<div class="flex flex-wrap gap-4">
+<button class="bg-primary text-background font-label-sm-caps text-label-sm-caps px-10 py-5 hover:bg-opacity-90 transition-all duration-300 transform hover:scale-105 active:scale-95">
+                        SHOP NOW
+                    </button>
+<button class="border border-primary/20 text-primary font-label-sm-caps text-label-sm-caps px-10 py-5 hover:bg-primary/5 transition-all duration-300">
+                        2024 COLLECTION
+                    </button>
+</div>
+</div>
+</div>
+<!-- Floating Elements -->
+<div class="absolute right-margin-desktop bottom-12 z-20 flex flex-col items-end gap-12">
+<div class="vertical-text font-label-sm-caps text-label-sm-caps text-on-surface-variant tracking-[0.5em] opacity-50">
+                AUTUMN / WINTER 2024
+            </div>
+<div class="flex flex-col items-center gap-4">
+<span class="font-label-sm-caps text-label-sm-caps text-primary">01 — 03</span>
+<div class="w-[1px] h-20 bg-outline-variant relative">
+<div class="absolute top-0 left-0 w-full h-1/3 bg-primary"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 3: Notice Bar -->
+<div class="w-full h-12 bg-[#0f0f0f] border-y border-outline-variant flex items-center justify-between px-margin-desktop overflow-hidden">
+<div class="flex items-center gap-6 overflow-hidden">
+<span class="font-label-sm-caps text-label-sm-caps text-primary shrink-0">NOTICE:</span>
+<div class="animate-marquee whitespace-nowrap">
+<span class="font-label-sm-caps text-label-sm-caps text-on-surface-variant">2024 가을 컬렉션 2차 딜리버리가 시작되었습니다. — DSTRKT // SYSTEM 24-25 [NEW ARRIVALS NOW LIVE] —</span>
+</div>
+</div>
+<a class="font-label-sm-caps text-label-sm-caps text-primary hover:underline underline-offset-4 ml-4 shrink-0" href="#">VIEW MORE</a>
+</div>
+<!-- Section 4: Best Seller Grid -->
+<section class="w-full flex flex-col md:flex-row border-b border-outline-variant">
+<!-- Left Sidebar (Sticky) -->
+<div class="w-full md:w-1/4 border-r border-outline-variant p-margin-desktop relative overflow-hidden bg-surface-container-low min-h-[400px]">
+<div class="sticky top-32">
+<h2 class="font-headline-lg text-headline-lg text-primary mb-2">베스트 셀러</h2>
+<p class="font-label-sm-caps text-label-sm-caps text-on-surface-variant opacity-60">SELECTED UTILITY PIECES</p>
+<div class="absolute -bottom-10 -left-10 select-none pointer-events-none">
+<span class="text-[120px] font-black text-outline-variant/10 leading-none tracking-tighter">DSTRKT24</span>
+</div>
+</div>
+</div>
+<!-- Right Grid -->
+<div class="w-full md:w-3/4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+<!-- Product Cards (Loop) -->
+<script>
+                const products = [
+                    { name: "테크니컬 카고 팬츠 01", price: "249,000", img: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=1000&auto=format&fit=crop" },
+                    { name: "쉘 유틸리티 재킷", price: "485,000", img: "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=1000&auto=format&fit=crop" },
+                    { name: "모듈러 백팩 V2", price: "189,000", img: "https://images.unsplash.com/photo-1553062407-98eeb94c6a62?q=80&w=1000&auto=format&fit=crop" },
+                    { name: "컴뱃 부츠 09", price: "320,000", img: "https://images.unsplash.com/photo-1605812860427-4024433a70fd?q=80&w=1000&auto=format&fit=crop" }
+                ];
+                
+                document.write(products.map((p, i) => `
+                    <div class="group relative aspect-[3/4] border-b border-r border-outline-variant flex flex-col bg-background overflow-hidden">
+                        <div class="absolute top-4 left-4 z-10">
+                            <span class="bg-primary text-background font-label-sm-caps text-[9px] px-2 py-0.5 tracking-widest">BEST</span>
+                        </div>
+                        <div class="flex-1 relative overflow-hidden">
+                            <img src="${p.img}" 
+                                 class="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700" 
+                                 data-alt="Technical apparel close-up with ${p.name}, highlighting brutalist functional design and high-end materials. The lighting is cinematic, cold, and professional, emphasizing textures like ripstop nylon and polished metal hardware. Perfect fashion editorial style for a futuristic urban brand.">
+                        </div>
+                        <div class="p-6 border-t border-outline-variant flex justify-between items-end bg-surface-container-low group-hover:bg-primary transition-colors duration-300">
+                            <div>
+                                <p class="font-label-sm-caps text-label-sm-caps text-on-surface-variant group-hover:text-background transition-colors duration-300 mb-1">${p.name}</p>
+                                <p class="font-headline-lg text-[18px] text-primary group-hover:text-background transition-colors duration-300">₩ ${p.price}</p>
+                            </div>
+                            <button class="material-symbols-outlined text-primary group-hover:text-background transition-colors duration-300 text-[20px]">add</button>
+                        </div>
+                    </div>
+                `).join(''));
+            </script>
+</div>
+</section>
+<!-- Section 5: Footer Values -->
+<section class="px-margin-desktop py-32 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter bg-background border-b border-outline-variant">
+<div class="p-8 border border-outline-variant flex flex-col gap-6 group hover:border-primary transition-colors duration-500">
+<span class="font-label-sm-caps text-[10px] text-on-surface-variant opacity-40">01</span>
+<h3 class="font-headline-lg text-[24px] text-primary tracking-widest">QUALITY</h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">우리는 타협하지 않는 품질을 추구합니다. 엄선된 테크니컬 원단과 정교한 마감 처리를 통해 시간이 흘러도 변함없는 내구성을 보장합니다.</p>
+</div>
+<div class="p-8 border border-outline-variant flex flex-col gap-6 group hover:border-primary transition-colors duration-500">
+<span class="font-label-sm-caps text-[10px] text-on-surface-variant opacity-40">02</span>
+<h3 class="font-headline-lg text-[24px] text-primary tracking-widest">DESIGN</h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">형태는 기능을 따릅니다. 도시 환경에서의 실용성을 극대화하면서도 불필요한 장식을 배제한 미니멀리즘의 정수를 디자인에 담아냅니다.</p>
+</div>
+<div class="p-8 border border-outline-variant flex flex-col gap-6 group hover:border-primary transition-colors duration-500">
+<span class="font-label-sm-caps text-[10px] text-on-surface-variant opacity-40">03</span>
+<h3 class="font-headline-lg text-[24px] text-primary tracking-widest">CULTURE</h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">DSTRKT는 단순한 의류 브랜드를 넘어, 현대적인 도시 생활의 방식을 제안하고 새로운 하위 문화를 탐구하는 창의적인 플랫폼입니다.</p>
+</div>
+<div class="p-8 border border-outline-variant flex flex-col gap-6 group hover:border-primary transition-colors duration-500">
+<span class="font-label-sm-caps text-[10px] text-on-surface-variant opacity-40">04</span>
+<h3 class="font-headline-lg text-[24px] text-primary tracking-widest">COMMUNITY</h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">우리와 같은 가치를 공유하는 사람들의 연대를 중시합니다. 기술과 예술, 패션이 교차하는 지점에서 새로운 담론을 형성합니다.</p>
+</div>
+</section>
+<!-- Footer -->
+<footer class="w-full py-20 px-margin-desktop grid grid-cols-1 md:grid-cols-4 gap-gutter bg-background border-t border-outline-variant">
+<div class="col-span-1 md:col-span-1">
+<h2 class="font-headline-lg text-headline-lg text-primary mb-8 tracking-tighter">DSTRKT</h2>
+<p class="font-label-sm-caps text-label-sm-caps text-on-surface-variant max-w-[240px] opacity-60">©2024 DSTRKT SYSTEM. ALL RIGHTS RESERVED.</p>
+</div>
+<div class="flex flex-col gap-4">
+<h4 class="font-label-sm-caps text-label-sm-caps text-primary mb-4">PAGES</h4>
+<a class="font-label-sm-caps text-label-sm-caps text-on-surface-variant hover:text-primary transition-colors" href="#">PRIVACY</a>
+<a class="font-label-sm-caps text-label-sm-caps text-on-surface-variant hover:text-primary transition-colors" href="#">TERMS</a>
+<a class="font-label-sm-caps text-label-sm-caps text-on-surface-variant hover:text-primary transition-colors" href="#">SHIPPING</a>
+<a class="font-label-sm-caps text-label-sm-caps text-on-surface-variant hover:text-primary transition-colors" href="#">CONTACT</a>
+</div>
+<div class="flex flex-col gap-4">
+<h4 class="font-label-sm-caps text-label-sm-caps text-primary mb-4">SOCIAL</h4>
+<a class="font-label-sm-caps text-label-sm-caps text-on-surface-variant hover:text-primary transition-colors" href="#">INSTAGRAM</a>
+<a class="font-label-sm-caps text-label-sm-caps text-on-surface-variant hover:text-primary transition-colors" href="#">YOUTUBE</a>
+<a class="font-label-sm-caps text-label-sm-caps text-on-surface-variant hover:text-primary transition-colors" href="#">BEHANCE</a>
+</div>
+<div class="flex flex-col gap-6">
+<h4 class="font-label-sm-caps text-label-sm-caps text-primary mb-4">NEWSLETTER</h4>
+<div class="flex border-b border-outline-variant pb-2">
+<input class="bg-transparent border-none outline-none font-label-sm-caps text-label-sm-caps text-primary placeholder:text-on-surface-variant/40 flex-1" placeholder="EMAIL ADDRESS" type="email"/>
+<button class="material-symbols-outlined text-primary">arrow_forward</button>
+</div>
+</div>
+</footer>
+<!-- Bottom Navigation for Mobile -->
+<nav class="fixed bottom-0 left-1/2 -translate-x-1/2 z-50 flex gap-4 px-6 py-3 mb-8 w-max bg-surface-container/90 backdrop-blur-lg rounded-full shadow-2xl border border-outline-variant md:hidden">
+<button class="bg-primary text-on-primary rounded-full p-3 active:scale-95 transition-all">
+<span class="material-symbols-outlined">home_max</span>
+</button>
+<button class="text-on-surface-variant p-3 hover:text-primary active:scale-95 transition-all">
+<span class="material-symbols-outlined">grid_view</span>
+</button>
+<button class="text-on-surface-variant p-3 hover:text-primary active:scale-95 transition-all">
+<span class="material-symbols-outlined">local_mall</span>
+</button>
+<button class="text-on-surface-variant p-3 hover:text-primary active:scale-95 transition-all">
+<span class="material-symbols-outlined">person</span>
+</button>
+</nav>
+<script>
+        // Micro-interactions and effects
+        document.addEventListener('mousemove', (e) => {
+            const header = document.querySelector('header');
+            if (window.scrollY < 50) {
+                const opacity = Math.min(0.8, 0.8 + (e.clientY / 1000));
+                header.style.backgroundColor = `rgba(10, 10, 10, ${opacity})`;
+            }
+        });
+
+        // Marquee animation style injection
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes marquee {
+                0% { transform: translateX(0); }
+                100% { transform: translateX(-50%); }
+            }
+            .animate-marquee {
+                display: inline-block;
+                animation: marquee 20s linear infinite;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body></html>

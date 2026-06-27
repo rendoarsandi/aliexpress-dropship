@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DSTRKT - COLLECTIONS</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&amp;family=Geist:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary": "#c9c6c5",
+                        "surface-tint": "#c6c6c7",
+                        "on-tertiary-fixed-variant": "#474646",
+                        "tertiary-fixed": "#e5e2e1",
+                        "on-tertiary": "#313030",
+                        "surface-variant": "#343535",
+                        "secondary-container": "#4a4949",
+                        "on-surface": "#e3e2e2",
+                        "surface": "#121414",
+                        "primary": "#ffffff",
+                        "primary-fixed-dim": "#c6c6c7",
+                        "inverse-surface": "#e3e2e2",
+                        "inverse-on-surface": "#303031",
+                        "on-primary": "#2f3131",
+                        "error-container": "#93000a",
+                        "on-secondary-container": "#bab8b7",
+                        "surface-container-high": "#292a2a",
+                        "surface-container-lowest": "#0d0e0f",
+                        "error": "#ffb4ab",
+                        "on-tertiary-container": "#656464",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "on-primary-container": "#636565",
+                        "on-primary-fixed-variant": "#454747",
+                        "tertiary-fixed-dim": "#c8c6c5",
+                        "tertiary": "#ffffff",
+                        "tertiary-container": "#e5e2e1",
+                        "surface-dim": "#121414",
+                        "on-error": "#690005",
+                        "surface-container-low": "#1b1c1c",
+                        "surface-bright": "#383939",
+                        "background": "#0a0a0a",
+                        "on-primary-fixed": "#1a1c1c",
+                        "on-secondary-fixed-variant": "#474646",
+                        "on-background": "#e3e2e2",
+                        "on-secondary": "#313030",
+                        "outline-variant": "#444748",
+                        "on-surface-variant": "#c4c7c8",
+                        "surface-container-highest": "#343535",
+                        "on-error-container": "#ffdad6",
+                        "inverse-primary": "#5d5f5f",
+                        "secondary-fixed": "#e5e2e1",
+                        "outline": "#8e9192",
+                        "primary-fixed": "#e2e2e2",
+                        "surface-container": "#1f2020",
+                        "on-tertiary-fixed": "#1c1b1b",
+                        "secondary-fixed-dim": "#c9c6c5",
+                        "primary-container": "#e2e2e2"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "margin-desktop": "40px",
+                        "gutter": "1px",
+                        "container-max": "1440px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Sora"],
+                        "headline-lg": ["Sora"],
+                        "body-md": ["Geist"],
+                        "display-2xl": ["Sora"],
+                        "label-sm-caps": ["Geist"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["32px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg": ["48px", { "lineHeight": "52px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }],
+                        "display-2xl": ["96px", { "lineHeight": "90px", "letterSpacing": "-0.04em", "fontWeight": "800" }],
+                        "label-sm-caps": ["11px", { "lineHeight": "16px", "letterSpacing": "0.2em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: theme('colors.background'); color: theme('colors.on-background'); }
+        /* Scrollbar styling for a cleaner look */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: theme('colors.background'); }
+        ::-webkit-scrollbar-thumb { background: theme('colors.surface-container-highest'); }
+        ::-webkit-scrollbar-thumb:hover { background: theme('colors.outline'); }
+    </style>
+</head>
+<body class="antialiased selection:bg-primary selection:text-on-primary bg-background text-on-background">
+<!-- Marquee Notice -->
+<div class="fixed top-0 left-0 w-full z-50 h-8 bg-surface-container-highest border-b border-outline-variant flex items-center overflow-hidden whitespace-nowrap">
+<div class="inline-block animate-[marquee_20s_linear_infinite] font-label-sm-caps text-label-sm-caps text-primary px-4">
+<span class="mx-4">DSTRKT // システム 24-25 [NEW ARRIVALS NOW LIVE] 24/7 TECHNICAL UTILITY</span>
+<span class="mx-4">DSTRKT // システム 24-25 [NEW ARRIVALS NOW LIVE] 24/7 TECHNICAL UTILITY</span>
+<span class="mx-4">DSTRKT // システム 24-25 [NEW ARRIVALS NOW LIVE] 24/7 TECHNICAL UTILITY</span>
+<span class="mx-4">DSTRKT // システム 24-25 [NEW ARRIVALS NOW LIVE] 24/7 TECHNICAL UTILITY</span>
+</div>
+<style>
+            @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        </style>
+</div>
+<!-- Top Navigation -->
+<header class="hidden md:flex fixed top-8 left-0 w-full z-40 h-20 bg-background/80 backdrop-blur-xl border-b border-outline-variant items-center justify-between px-margin-desktop">
+<a class="font-headline-lg font-bold tracking-tighter text-primary" href="#">DSTRKT</a>
+<div class="font-label-sm-caps flex gap-8 items-center">
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">SHOP</a>
+<a class="text-primary border-b border-primary pb-1 Active: opacity-70 transition-opacity" href="#">COLLECTION</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">LOOKBOOK</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">ABOUT</a>
+</div>
+<div class="flex items-center">
+<div class="flex items-center gap-6">
+<span class="font-label-sm-caps text-label-sm-caps text-on-surface-variant hover:text-primary transition-colors duration-300 cursor-pointer">KR</span>
+<button class="text-on-surface-variant hover:text-primary transition-colors duration-300"><span class="material-symbols-outlined">search</span></button>
+<button class="text-on-surface-variant hover:text-primary transition-colors duration-300"><span class="material-symbols-outlined">person</span></button>
+</div>
+<div class="border-r border-outline-variant h-8 mx-6"></div>
+<button class="flex items-center gap-2 font-label-sm-caps text-label-sm-caps text-primary hover:text-primary transition-colors duration-300">
+<span class="material-symbols-outlined">shopping_bag</span>
+<span>(0)</span>
+</button>
+</div>
+</header>
+<!-- Main Content -->
+<main class="pt-[120px] pb-32 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto bg-background">
+<!-- Header -->
+<header class="mb-16 border-b border-white/10 pb-8 flex flex-col md:flex-row md:items-end justify-between gap-8 mt-12 md:mt-24">
+<div>
+<h1 class="font-display-2xl text-display-2xl text-primary uppercase tracking-tighter">COLLECTIONS</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-4 max-w-md">Engineered utility for urban environments. Explore the latest technical garments designed for unrestricted movement and ultimate protection.</p>
+</div>
+<!-- Filter Bar -->
+<div class="flex flex-wrap gap-4 font-label-sm-caps text-label-sm-caps">
+<button class="px-4 py-2 border border-primary bg-primary text-on-primary">ALL</button>
+<button class="px-4 py-2 border border-white/10 text-on-surface hover:bg-white/5 transition-colors">FOOTWEAR</button>
+<button class="px-4 py-2 border border-white/10 text-on-surface hover:bg-white/5 transition-colors">LAYER</button>
+<button class="px-4 py-2 border border-white/10 text-on-surface hover:bg-white/5 transition-colors">EQUIPMENT</button>
+</div>
+</header>
+<!-- Product Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter bg-surface-container-lowest border border-outline-variant">
+<!-- Product Card 1 -->
+<article class="bg-surface relative group overflow-hidden flex flex-col">
+<div class="absolute top-4 left-4 z-10 font-label-sm-caps text-label-sm-caps text-on-surface-variant bg-surface/80 px-2 py-1 border border-white/10 backdrop-blur-sm">SKU: DS-EQ-01</div>
+<div class="absolute top-4 right-4 z-10 font-label-sm-caps text-label-sm-caps text-on-surface-variant">EQUIPMENT</div>
+<div class="aspect-[0.73] w-full bg-surface-container-lowest relative overflow-hidden">
+<img alt="Technical Crossbody Sling Bag" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out mix-blend-luminosity opacity-80 group-hover:opacity-100 group-hover:mix-blend-normal" src="https://lh3.googleusercontent.com/aida/AP1WRLvwbbL65z0s7RVpCl7CuhbX2R9BnXgPzSvda1A5mClOb7yZn3CdWlTpUHsGxyejWz2AbLf98xFYPKAEXYDQLdY6Av9AUlvhljso8u3dNBmE0DTR9CLqmnRC4KvvpIsmMYsAvmGuQVfU5bjDvk8KwqviYna55u3dD9OieEQM6k6UeqCC1g1QYm3GKI9HoDNmCpX8cwJRO3TVKM9BfY1zm1GrolqmwGNv_s5OvZNSnxCN5veaJW6XUvzmYpQ"/>
+</div>
+<div class="p-6 border-t border-white/10 flex flex-col flex-grow justify-between">
+<div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary uppercase mb-2">MODULAR SLING V2</h2>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">Waterproof technical nylon construction with fidlock magnetic closures.</p>
+</div>
+<div class="mt-6 flex justify-between items-end">
+<span class="font-label-sm-caps text-label-sm-caps text-primary text-lg">₩ 185,000</span>
+<button class="w-10 h-10 border border-white/10 flex items-center justify-center text-primary hover:bg-primary hover:text-on-primary transition-colors group/btn">
+<span class="material-symbols-outlined text-sm group-hover/btn:-rotate-45 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Product Card 2 -->
+<article class="bg-surface relative group overflow-hidden flex flex-col">
+<div class="absolute top-4 left-4 z-10 font-label-sm-caps text-label-sm-caps text-on-surface-variant bg-surface/80 px-2 py-1 border border-white/10 backdrop-blur-sm">SKU: DS-EQ-02</div>
+<div class="absolute top-4 right-4 z-10 font-label-sm-caps text-label-sm-caps text-on-surface-variant">EQUIPMENT</div>
+<div class="aspect-[0.73] w-full bg-surface-container-lowest relative overflow-hidden">
+<img alt="Technical Balaclava Hood" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out mix-blend-luminosity opacity-80 group-hover:opacity-100 group-hover:mix-blend-normal" src="https://lh3.googleusercontent.com/aida/AP1WRLuhhxgyg9hvvu2k0LYf2xh4ZKNWgJwRC-iDaYBbhTvkZBeeS7EgSAkxtGJJSc1HHP_EU_Na95XQaO4Jrlmt81yDEcjetQdYjz22fn_AglaXJJdJ0GLiLWS5PcjZpo2EQD8nO6XDL1JlD6FMXWSGKs5ohogX8ShBdEJRT5WxKEsAHanAuB5Y7VpkvDUHHaT3q6dK-pUktgpOxs9sTagRbsvEwB9pygKnye1amzU59imeWHlR1cUKgz_RpyM"/>
+</div>
+<div class="p-6 border-t border-white/10 flex flex-col flex-grow justify-between">
+<div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary uppercase mb-2">MESH BALACLAVA</h2>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">Breathable tactical headwear for extreme urban environments.</p>
+</div>
+<div class="mt-6 flex justify-between items-end">
+<span class="font-label-sm-caps text-label-sm-caps text-primary text-lg">₩ 85,000</span>
+<button class="w-10 h-10 border border-white/10 flex items-center justify-center text-primary hover:bg-primary hover:text-on-primary transition-colors group/btn">
+<span class="material-symbols-outlined text-sm group-hover/btn:-rotate-45 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Product Card 3 -->
+<article class="bg-surface relative group overflow-hidden flex flex-col">
+<div class="absolute top-4 left-4 z-10 font-label-sm-caps text-label-sm-caps text-on-surface-variant bg-surface/80 px-2 py-1 border border-white/10 backdrop-blur-sm">SKU: DS-LY-01</div>
+<div class="absolute top-4 right-4 z-10 font-label-sm-caps text-label-sm-caps text-on-surface-variant">LAYER</div>
+<div class="aspect-[0.73] w-full bg-surface-container-lowest relative overflow-hidden">
+<img alt="Technical Utility Vest" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out mix-blend-luminosity opacity-80 group-hover:opacity-100 group-hover:mix-blend-normal" src="https://lh3.googleusercontent.com/aida/AP1WRLvce0y7qGvDjRdTXyKVHob26uWJvpJOcSApT4Xe481rE3R9mxNud03FCdDjNRCwPS8cpB2r81rrnNccIuRoOmgTxilKvH-hB6XHA9xGUEN3p4ntkzjxKjQzUzn4S3Rvhqt5yj_NsvtV8lx7wYxoM56mw3DMmSkyzcqcI80DbQ1bmCVIJEMwvlFdiX6lPr05a_3etSO9FFFBiM5w71hWT2VAm8YequBHz6t_1PuImaZQno1sFlLfIvzYMQ"/>
+</div>
+<div class="p-6 border-t border-white/10 flex flex-col flex-grow justify-between">
+<div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary uppercase mb-2">TACTICAL VEST [01]</h2>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">Multi-pocket utility layer with adjustable webbing system.</p>
+</div>
+<div class="mt-6 flex justify-between items-end">
+<span class="font-label-sm-caps text-label-sm-caps text-primary text-lg">₩ 320,000</span>
+<button class="w-10 h-10 border border-white/10 flex items-center justify-center text-primary hover:bg-primary hover:text-on-primary transition-colors group/btn">
+<span class="material-symbols-outlined text-sm group-hover/btn:-rotate-45 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Product Card 4 -->
+<article class="bg-surface relative group overflow-hidden flex flex-col">
+<div class="absolute top-4 left-4 z-10 font-label-sm-caps text-label-sm-caps text-on-surface-variant bg-surface/80 px-2 py-1 border border-white/10 backdrop-blur-sm">SKU: DS-LY-02</div>
+<div class="absolute top-4 right-4 z-10 font-label-sm-caps text-label-sm-caps text-on-surface-variant">LAYER</div>
+<div class="aspect-[0.73] w-full bg-surface-container-lowest relative overflow-hidden">
+<img alt="Technical Cargo Joggers" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out mix-blend-luminosity opacity-80 group-hover:opacity-100 group-hover:mix-blend-normal" src="https://lh3.googleusercontent.com/aida/AP1WRLt2D825zLB0QUCflo89ujNk70Wu4kptgQEuhCWdkrtGgST1Kokv3U3aKBtjxdc2BRS8BdbQPKUpFw66IBy2tkxtu5JpVv0o4uHOL5SmPvqZHrcwMQGjItBTWWVcXX9JkpvVzN1sc9a6kJDHss0F0IREAI0W0BqP_cXGAXkcqRFqWhoxUA-pKHEZgcC-5VJY1hSUkt0WY-cCEPltr3t7Zd28GBKR8pKV5WGGZYNurx65PIslPFTtVLOtjGI"/>
+</div>
+<div class="p-6 border-t border-white/10 flex flex-col flex-grow justify-between">
+<div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary uppercase mb-2">ARTICULATED CARGO</h2>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">Water-repellent stretch fabric with ergonomic knee darts.</p>
+</div>
+<div class="mt-6 flex justify-between items-end">
+<span class="font-label-sm-caps text-label-sm-caps text-primary text-lg">₩ 245,000</span>
+<button class="w-10 h-10 border border-white/10 flex items-center justify-center text-primary hover:bg-primary hover:text-on-primary transition-colors group/btn">
+<span class="material-symbols-outlined text-sm group-hover/btn:-rotate-45 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+</article>
+</div>
+</main>
+<!-- Mobile Bottom Navigation -->
+<nav class="md:hidden fixed bottom-0 left-1/2 -translate-x-1/2 z-50 flex gap-4 px-6 py-3 mb-8 w-max bg-surface-container/90 backdrop-blur-lg rounded-full mx-auto border border-outline-variant shadow-2xl font-label-sm-caps text-label-sm-caps">
+<a class="text-on-surface-variant p-3 flex flex-col items-center hover:text-primary" href="#">
+<span class="material-symbols-outlined text-xl mb-1">home_max</span>
+<span class="">Home</span>
+</a>
+<a class="bg-primary text-on-primary rounded-full p-3 flex flex-col items-center Active: scale-95 duration-200" href="#">
+<span class="material-symbols-outlined text-xl mb-1" style="font-variation-settings: 'FILL' 1;">grid_view</span>
+<span class="">Shop</span>
+</a>
+<a class="text-on-surface-variant p-3 flex flex-col items-center hover:text-primary" href="#">
+<span class="material-symbols-outlined text-xl mb-1">local_mall</span>
+<span class="">Cart</span>
+</a>
+<a class="text-on-surface-variant p-3 flex flex-col items-center hover:text-primary" href="#">
+<span class="material-symbols-outlined text-xl mb-1">person</span>
+<span class="">Profile</span>
+</a>
+</nav>
+<!-- Footer -->
+<footer class="w-full py-20 px-margin-mobile md:px-margin-desktop grid grid-cols-1 md:grid-cols-4 gap-gutter bg-background border-t border-outline-variant flat no shadows font-label-sm-caps text-label-sm-caps text-on-surface-variant mt-24">
+<div class="col-span-1 md:col-span-2">
+<h2 class="font-headline-lg text-headline-lg text-primary mb-8 font-bold tracking-tighter">DSTRKT</h2>
+<p class="mt-auto">©2024 DSTRKT SYSTEM. ALL RIGHTS RESERVED.</p>
+</div>
+<div class="flex flex-col gap-4">
+<span class="text-primary mb-2 border-b border-white/10 pb-2 w-max">LEGAL</span>
+<a class="hover:text-primary transition-colors w-max" href="#">PRIVACY</a>
+<a class="hover:text-primary transition-colors w-max" href="#">TERMS</a>
+</div>
+<div class="flex flex-col gap-4">
+<span class="text-primary mb-2 border-b border-white/10 pb-2 w-max">SUPPORT</span>
+<a class="hover:text-primary transition-colors w-max" href="#">SHIPPING</a>
+<a class="hover:text-primary transition-colors w-max" href="#">CONTACT</a>
+</div>
+</footer>
+</body></html>
