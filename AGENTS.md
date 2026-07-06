@@ -91,6 +91,7 @@ This application is designed to run in zero-config local environments. For produ
 ## Project-Scoped Rules
 
 - **Interactive/Confirmation Rule:** Always ask for explicit permission or confirmation before generating markdown artifacts (`.md` files in the brain directory) or modifying configuration files, unless the user has explicitly requested it in the prompt.
+- **Scope Limitation of AGENTS.md:** Do not write implementation roadmaps, transient plans, or subagent tasks/status updates into `AGENTS.md`. Keep this file exclusively focused on stable core codebase implementation details, the technical stack (TanStack Fullstack, Cloudflare, `@effect/schema`), and long-term architectural choices.
 
 ---
 
@@ -115,14 +116,4 @@ This application is designed to run in zero-config local environments. For produ
 5. **Payment flow**: Stripe Hosted Checkout with webhook tracking (or server function status polling).
 6. **Storefront Visual Design**: Public homepage converted to a high-aesthetic, visual tech-wear catalog with product grid details. System control dashboard moved to `/admin` route.
 7. **Order Tracking & Log**: Authenticated user tracking path under `/profile` or `/orders` displaying interactive logs.
-
----
-
-## Next Steps
-
-1. Start local dev server: `npm run dev`
-2. Uninstall `zod` and install `effect` and `@effect/schema`.
-3. Create server-side `better-auth` API route and UI endpoints.
-4. Scaffold the public-facing storefront and move the dashboard to `/admin`.
-5. Integrate RapidAPI and Stripe checkout redirect server actions.
 
