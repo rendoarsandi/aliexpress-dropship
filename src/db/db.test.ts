@@ -43,12 +43,18 @@ describe('DSTRKT Database Schema & Authentication Integration', () => {
     expect(productFields.imageUrl).toBeDefined()
   })
 
-  test('should verify better-auth integration is configured correctly', () => {
+  test('should verify better-auth integration is configured correctly with email and Google social provider', () => {
     expect(auth).toBeDefined()
     expect(auth.options).toBeDefined()
     expect(auth.options.database).toBeDefined()
     expect(auth.options.emailAndPassword).toBeDefined()
     expect(auth.options.emailAndPassword?.enabled).toBe(true)
+
+    // Verify Google provider config
+    expect(auth.options.socialProviders).toBeDefined()
+    expect(auth.options.socialProviders?.google).toBeDefined()
+    expect(auth.options.socialProviders?.google?.clientId).toBeDefined()
+    expect(auth.options.socialProviders?.google?.clientSecret).toBeDefined()
   })
 })
 
