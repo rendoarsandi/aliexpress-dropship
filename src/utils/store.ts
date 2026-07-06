@@ -156,3 +156,85 @@ export const clearCart = () => {
   })
 }
 
+// -------------------------------------------------------------
+// Storefront Shopper Order History & Tracking State
+// -------------------------------------------------------------
+export interface TrackedOrder {
+  id: string
+  email: string
+  fullName: string
+  shippingAddress: string
+  walletId: string
+  items: CartItem[]
+  subtotal: number
+  shipping: number
+  vat: number
+  total: number
+  status: 'QUEUED FOR ROUTING' | 'INTEGRATING FABRIC' | 'OUT FOR DELIVERY' | 'NODE DELIVERED'
+  placedAt: string
+  telemetryLogs: string[]
+}
+
+export interface OrdersState {
+  orders: TrackedOrder[]
+}
+
+const mockOrders: TrackedOrder[] = [
+  {
+    id: 'DSTRKT-ORD-FF89',
+    email: 'operative_099@domain.com',
+    fullName: 'ALEX CHEN',
+    shippingAddress: 'GRID-SECTOR 4B, NEOMETROPOLIS',
+    walletId: '0x71C2B9e3d99FF817a0fE37C0DEb72Cd9Eef98F09',
+    items: [
+      { id: '1', productId: '1', name: 'DSTRKT-01 Ghost Shell Jacket', price: 380, quantity: 1, options: { Size: 'M', Color: 'Stealth Black' } }
+    ],
+    subtotal: 380,
+    shipping: 0,
+    vat: 76,
+    total: 456,
+    status: 'INTEGRATING FABRIC',
+    placedAt: '2026-07-05T14:32:00.000Z',
+    telemetryLogs: [
+      'SECURE TELEMETRY TRANSACTION ROUTED',
+      'DEBIT CONFIRMED SECURE CLEARING NODE',
+      'GHOST SHELL FABRIC TEXTURE RE-ALIGNMENT IN PROGRESS',
+      'QUEUE REGISTERED IN SHREDDING DEPT'
+    ]
+  }
+]
+
+function getInitialOrdersState(): OrdersState {
+  if (!isBrowser) return { orders: [] }
+  try {
+    const stored = window.localStorage.getItem('dstrkt_orders')
+    return stored ? JSON.parse(stored) : { orders: mockOrders }
+  } catch (e) {
+    return { orders: mockOrders }
+  }
+}
+
+export const ordersStore = new Store<OrdersState>(getInitialOrdersState())
+
+function saveOrdersState(state: OrdersState) {
+  if (isBrowser) {
+    try {
+      window.localStorage.setItem('dstrkt_orders', JSON.stringify(state))
+    } catch (e) {
+      // ignore
+    }
+  }
+}
+
+export const addOrder = (order: TrackedOrder) => {
+  ordersStore.setState((state) => {
+    const nextState = {
+      ...state,
+      orders: [order, ...state.orders]
+    }
+    saveOrdersState(nextState)
+    return nextState
+  })
+}
+
+

@@ -1,0 +1,123 @@
+import * as S from "@effect/schema/Schema";
+
+// Email refinement pattern
+export const EmailSchema = S.String.pipe(
+  S.pattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/),
+  S.annotations({ message: () => "Must be a valid email address" })
+);
+
+// Non-empty string
+export const NonEmptyString = S.String.pipe(
+  S.minLength(1),
+  S.annotations({ message: () => "Must be a non-empty string" })
+);
+
+// Non-negative number
+export const NonNegativeNumber = S.Number.pipe(
+  S.greaterThanOrEqualTo(0),
+  S.annotations({ message: () => "Must be a non-negative number" })
+);
+
+// Positive integer (>= 1)
+export const PositiveInteger = S.Int.pipe(
+  S.greaterThanOrEqualTo(1),
+  S.annotations({ message: () => "Must be a positive integer (at least 1)" })
+);
+
+// ==========================================
+// 1. Product Schema
+// ==========================================
+export const ProductSchema = S.Struct({
+  id: S.String,
+  title: NonEmptyString,
+  description: S.NullOr(S.String),
+  rawPrice: NonNegativeNumber,
+  imageUrl: S.NullOr(S.String),
+  additionalImages: S.NullOr(S.String),
+  options: S.NullOr(S.String),
+  variants: S.NullOr(S.String),
+  tags: S.NullOr(S.String),
+  sourceUrl: S.NullOr(S.String),
+  createdAt: S.Number,
+});
+
+export type Product = S.Schema.Type<typeof ProductSchema>;
+
+// ==========================================
+// 2. Order Schema
+// ==========================================
+export const OrderStatusSchema = S.Literal('pending', 'paid', 'shipped', 'cancelled');
+
+export const OrderSchema = S.Struct({
+  id: S.String,
+  productId: S.String,
+  quantity: PositiveInteger,
+  totalPrice: NonNegativeNumber,
+  status: OrderStatusSchema,
+  customerEmail: EmailSchema,
+  shippingAddress: NonEmptyString,
+  createdAt: S.Number,
+});
+
+export type Order = S.Schema.Type<typeof OrderSchema>;
+
+// ==========================================
+// 3. User Schema
+// ==========================================
+export const UserSchema = S.Struct({
+  id: S.String,
+  name: NonEmptyString,
+  email: EmailSchema,
+  emailVerified: S.Boolean,
+  image: S.NullOr(S.String),
+  createdAt: S.Union(S.Date, S.Number, S.String),
+  updatedAt: S.Union(S.Date, S.Number, S.String),
+});
+
+export type User = S.Schema.Type<typeof UserSchema>;
+
+// ==========================================
+// 4. Session Schema
+// ==========================================
+export const SessionSchema = S.Struct({
+  id: S.String,
+  expiresAt: S.Union(S.Date, S.Number, S.String),
+  token: S.String,
+  createdAt: S.Union(S.Date, S.Number, S.String),
+  updatedAt: S.Union(S.Date, S.Number, S.String),
+  ipAddress: S.NullOr(S.String),
+  userAgent: S.NullOr(S.String),
+  userId: S.String,
+});
+
+export type Session = S.Schema.Type<typeof SessionSchema>;
+
+// ==========================================
+// 5. Checkout Payload Schema
+// ==========================================
+export const CheckoutItemSchema = S.Struct({
+  productId: S.String,
+  name: NonEmptyString,
+  quantity: PositiveInteger,
+  price: NonNegativeNumber,
+  options: S.Record({ key: S.String, value: S.String }),
+});
+
+export const CheckoutPayloadSchema = S.Struct({
+  email: EmailSchema,
+  fullName: NonEmptyString,
+  nodeAddress: NonEmptyString,
+  walletId: NonEmptyString,
+  items: S.Array(CheckoutItemSchema),
+});
+
+export type CheckoutPayload = S.Schema.Type<typeof CheckoutPayloadSchema>;
+
+// ==========================================
+// 6. Decoders & Validators
+// ==========================================
+export const decodeProduct = S.decodeUnknownSync(ProductSchema);
+export const decodeOrder = S.decodeUnknownSync(OrderSchema);
+export const decodeUser = S.decodeUnknownSync(UserSchema);
+export const decodeSession = S.decodeUnknownSync(SessionSchema);
+export const decodeCheckoutPayload = S.decodeUnknownSync(CheckoutPayloadSchema);
