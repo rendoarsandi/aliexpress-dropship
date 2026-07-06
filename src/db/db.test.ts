@@ -19,6 +19,7 @@ vi.mock('better-sqlite3', () => {
 import * as schema from './schema'
 import { auth } from '../lib/auth'
 import { importAliExpressProductHandler } from '../lib/scraperSession'
+import { getSettingsHandler, updateSettingsHandler } from '../lib/settingsSession'
 import { db } from './index'
 
 describe('DSTRKT Database Schema & Authentication Integration', () => {
@@ -207,5 +208,156 @@ describe('AliExpress Product Scraper Security Boundaries & Markups', () => {
 
     selectSpy.mockRestore()
     insertSpy.mockRestore()
+  })
+})
+
+
+describe('Global Settings Control & DB Synchronization', () => {
+  const mockAdminSession = {
+    session: {
+      id: 'session-id',
+      userId: 'user-id',
+      token: 'token',
+      expiresAt: new Date(Date.now() + 3600000),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      ipAddress: null,
+      userAgent: null,
+    },
+    user: {
+      id: 'user-id',
+      email: 'admin@dstrkt.com',
+      name: 'Admin User',
+      emailVerified: true,
+      image: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+  }
+
+  const mockNonAdminSession = {
+    session: {
+      id: 'session-id-2',
+      userId: 'user-id-2',
+      token: 'token-2',
+      expiresAt: new Date(Date.now() + 3600000),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      ipAddress: null,
+      userAgent: null,
+    },
+    user: {
+      id: 'user-id-2',
+      email: 'user@dstrkt.com',
+      name: 'Regular User',
+      emailVerified: true,
+      image: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+  }
+
+  test('should fail to retrieve settings when unauthorized (non-admin / no session)', async () => {
+    await expect(getSettingsHandler({ session: null })).rejects.toThrow('UNAUTHORIZED')
+    await expect(getSettingsHandler({ session: mockNonAdminSession })).rejects.toThrow('UNAUTHORIZED')
+  })
+
+  test('should retrieve default multiplier settings if not found in db for admin', async () => {
+    const selectSpy = vi.spyOn(db, 'select').mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          get: vi.fn().mockResolvedValue(null)
+        })
+      })
+    } as any)
+
+    const result = await getSettingsHandler({ session: mockAdminSession })
+    expect(result).toBeDefined()
+    expect(result.marginMultiplier).toBe(1.5)
+    expect(result.markupType).toBe('multiplier')
+
+    selectSpy.mockRestore()
+  })
+
+  test('should successfully retrieve existing settings when found in db for admin', async () => {
+    const selectSpy = vi.spyOn(db, 'select').mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          get: vi.fn().mockResolvedValue({
+            id: 'markup_multiplier',
+            markupType: 'multiplier',
+            fixedMarkup: 0.0,
+            marginMultiplier: 2.5,
+            updatedAt: 12345
+          })
+        })
+      })
+    } as any)
+
+    const result = await getSettingsHandler({ session: mockAdminSession })
+    expect(result).toBeDefined()
+    expect(result.marginMultiplier).toBe(2.5)
+
+    selectSpy.mockRestore()
+  })
+
+  test('should fail to update settings when unauthorized', async () => {
+    const res1 = await updateSettingsHandler({ marginMultiplier: 1.8 }, { session: null })
+    expect(res1.error).toContain('UNAUTHORIZED')
+
+    const res2 = await updateSettingsHandler({ marginMultiplier: 1.8 }, { session: mockNonAdminSession })
+    expect(res2.error).toContain('UNAUTHORIZED')
+  })
+
+  test('should reject negative multipliers during update', async () => {
+    const res = await updateSettingsHandler({ marginMultiplier: -1.0 }, { session: mockAdminSession })
+    expect(res.error).toContain('INVALID_VALUE')
+  })
+
+  test('should successfully insert settings in database for admin when none exists', async () => {
+    const selectSpy = vi.spyOn(db, 'select').mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          get: vi.fn().mockResolvedValue(null)
+        })
+      })
+    } as any)
+
+    const insertSpy = vi.spyOn(db, 'insert').mockReturnValue({
+      values: vi.fn().mockResolvedValue({} as any)
+    } as any)
+
+    const res = await updateSettingsHandler({ marginMultiplier: 1.85 }, { session: mockAdminSession })
+    expect(res.success).toBe(true)
+    expect(insertSpy).toHaveBeenCalled()
+
+    selectSpy.mockRestore()
+    insertSpy.mockRestore()
+  })
+
+  test('should successfully update settings in database for admin when they exist', async () => {
+    const selectSpy = vi.spyOn(db, 'select').mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          get: vi.fn().mockResolvedValue({
+            id: 'markup_multiplier',
+            marginMultiplier: 1.5
+          })
+        })
+      })
+    } as any)
+
+    const updateSpy = vi.spyOn(db, 'update').mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue({} as any)
+      })
+    } as any)
+
+    const res = await updateSettingsHandler({ marginMultiplier: 2.15 }, { session: mockAdminSession })
+    expect(res.success).toBe(true)
+    expect(updateSpy).toHaveBeenCalled()
+
+    selectSpy.mockRestore()
+    updateSpy.mockRestore()
   })
 })
