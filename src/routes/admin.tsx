@@ -29,6 +29,7 @@ import {
 import { authStore } from '../utils/authStore'
 import { getSessionFn } from '../lib/authSession'
 import { importAliExpressProductFn } from '../lib/scraperSession'
+import { getSettingsFn, updateSettingsFn } from '../lib/settingsSession'
 
 export const Route = createFileRoute('/admin')({
   beforeLoad: async () => {
@@ -179,6 +180,52 @@ function Dashboard() {
     pageIndex: 0,
     pageSize: 5
   })
+
+  const { data: globalSettings, refetch: refetchSettings } = useQuery({
+    queryKey: ['globalSettings'],
+    queryFn: async () => {
+      try {
+        return await getSettingsFn()
+      } catch (err) {
+        console.error('Error fetching settings:', err)
+        return { marginMultiplier: 1.5 }
+      }
+    }
+  })
+
+  const [multiplierInput, setMultiplierInput] = useState('')
+  const [isUpdatingSettings, setIsUpdatingSettings] = useState(false)
+  const [settingsSuccess, setSettingsSuccess] = useState<string | null>(null)
+  const [settingsError, setSettingsError] = useState<string | null>(null)
+
+  const currentMultiplier = globalSettings?.marginMultiplier ?? 1.5
+
+  const handleUpdateSettings = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const val = parseFloat(multiplierInput)
+    if (isNaN(val) || val < 0) {
+      setSettingsError('INVALID COEFFICIENT: VALUE MUST BE A NON-NEGATIVE NUMBER')
+      return
+    }
+
+    setIsUpdatingSettings(true)
+    setSettingsError(null)
+    setSettingsSuccess(null)
+
+    try {
+      const res = await updateSettingsFn({ data: { marginMultiplier: val } })
+      if (res && 'error' in res && res.error) {
+        setSettingsError(res.error)
+      } else {
+        setSettingsSuccess(`MULTIPLIER ADJUSTED: ${val}x`)
+        refetchSettings()
+      }
+    } catch (err: any) {
+      setSettingsError(err.message || 'TRANSACTION REJECTED BY DATABASE')
+    } finally {
+      setIsUpdatingSettings(false)
+    }
+  }
 
   const [aliExpressUrl, setAliExpressUrl] = useState('')
   const [isScraping, setIsScraping] = useState(false)
@@ -413,6 +460,67 @@ function Dashboard() {
                   <span className="font-mono text-sm font-bold text-white uppercase">{st.value}</span>
                 </div>
               ))}
+            </div>
+
+            {/* GLOBAL MARKUP SETTINGS PANEL (CYBERPUNK TECH-WEAR AESTHETIC) */}
+            <div className="border border-white/10 bg-zinc-950/40 p-6 space-y-4">
+              <div className="flex items-center gap-2 border-b border-white/5 pb-3">
+                <Cpu className="h-4 w-4 text-white animate-pulse" />
+                <span className="font-mono text-xs tracking-widest text-white font-bold uppercase">GLOBAL PRICING CONFIGURATION</span>
+              </div>
+              <p className="font-mono text-[10.5px] text-zinc-400 leading-relaxed">
+                Adjust the active system price margin multiplier coefficient. Imported dropship assets are dynamically scaled against their raw sourcing index before database commit.
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="border border-zinc-800 bg-[#0c0c0c] p-4 flex flex-col justify-center">
+                  <span className="text-[9px] font-mono tracking-wider text-zinc-500 block mb-1 uppercase">CURRENT COEFFICIENT</span>
+                  <span className="font-mono text-2xl font-black text-white tracking-wider">
+                    {globalSettings ? `${currentMultiplier.toFixed(2)}x` : 'RETRIEVING...'}
+                  </span>
+                </div>
+
+                <form onSubmit={handleUpdateSettings} className="flex flex-col justify-between gap-2">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[9px] font-mono tracking-wider text-zinc-500 uppercase">ADJUST MULTIPLIER</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder={currentMultiplier.toString()}
+                        value={multiplierInput}
+                        onChange={(e) => setMultiplierInput(e.target.value)}
+                        className="w-full bg-[#161616] border border-zinc-800 text-white font-mono text-xs px-4 py-3 placeholder-zinc-600 focus:outline-none focus:border-white"
+                      />
+                      <button
+                        type="submit"
+                        disabled={isUpdatingSettings}
+                        className="bg-white text-black font-mono text-xs tracking-widest font-bold px-6 py-3 hover:bg-zinc-200 transition disabled:opacity-30 shrink-0 uppercase"
+                      >
+                        {isUpdatingSettings ? 'COMMITTING...' : 'UPDATE'}
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              {(settingsSuccess || settingsError) && (
+                <div className="border border-zinc-800 bg-[#0c0c0c] p-3 font-mono text-[10.5px]">
+                  {settingsSuccess && (
+                    <div className="flex items-center gap-2 text-emerald-400">
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                      <span className="font-bold uppercase tracking-wider">SYSTEM CONFIG UPDATE: {settingsSuccess}</span>
+                    </div>
+                  )}
+                  {settingsError && (
+                    <div className="flex items-center gap-2 text-red-400">
+                      <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                      <span className="font-bold uppercase tracking-wider">CRITICAL REJECTION: {settingsError}</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* ALIEXPRESS PRODUCT IMPORT SYSTEM (CYBERPUNK SCRAPER BOX) */}

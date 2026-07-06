@@ -4,18 +4,11 @@
   "compatibility_date": "2025-09-02",
   "compatibility_flags": ["nodejs_compat"],
   "main": "@tanstack/react-start/server-entry",
-  "durable_objects": {
-    "bindings": [
-      {
-        "name": "DB_DO",
-        "class_name": "DatabaseDO"
-      }
-    ]
-  },
-  "migrations": [
+  "d1_databases": [
     {
-      "tag": "v1",
-      "new_sqlite_classes": ["DatabaseDO"]
+      "binding": "DB",
+      "database_name": "dstrkt-db",
+      "database_id": "00000000-0000-0000-0000-000000000000"
     }
   ]
 }
