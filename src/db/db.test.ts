@@ -18,8 +18,8 @@ vi.mock('better-sqlite3', () => {
 
 import * as schema from './schema'
 import { auth } from '../lib/auth'
-import { importAliExpressProductHandler } from '../lib/scraperSession'
-import { getSettingsHandler, updateSettingsHandler, getSettingsEffect, updateSettingsEffect } from '../lib/settingsSession'
+import { importAliExpressProductHandler } from '../lib/scraperSession.server'
+import { getSettingsHandler, updateSettingsHandler, getSettingsEffect, updateSettingsEffect } from '../lib/settingsSession.server'
 import { db } from './index'
 import { Effect } from 'effect'
 

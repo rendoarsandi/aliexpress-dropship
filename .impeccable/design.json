@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-07T11:00:00Z",
+  "title": "Design System: STITCH DSTRKT",
+  "extensions": {
+    "colorMeta": {
+      "primary": { "role": "primary", "displayName": "Active White", "canonical": "oklch(100% 0 0)", "tonalRamp": ["#000000", "#1e1e1e", "#3d3d3d", "#5c5c5c", "#7b7b7b", "#9a9a9a", "#b9b9b9", "#ffffff"] },
+      "on-primary": { "role": "primary", "displayName": "Stealth Black", "canonical": "oklch(15% 0 0)", "tonalRamp": ["#000000", "#050505", "#0a0a0a", "#111111", "#1b1c1c", "#1f2020", "#292a2a", "#383939"] },
+      "neutral-bg": { "role": "neutral", "displayName": "Stealth Black Background", "canonical": "oklch(12% 0 0)", "tonalRamp": ["#000000", "#050505", "#0a0a0a", "#111111", "#1b1c1c", "#1f2020", "#292a2a", "#383939"] },
+      "neutral-surface": { "role": "neutral", "displayName": "Deep Steel Surface", "canonical": "oklch(17% 0 0)", "tonalRamp": ["#000000", "#050505", "#0a0a0a", "#111111", "#1b1c1c", "#1f2020", "#292a2a", "#383939"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Sora Bold", "purpose": "Hero title typography only." },
+      "body": { "displayName": "Geist Sans", "purpose": "Highly legible copy, descriptions, details." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "ease-standard", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Tactical snappy page transitions." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Active Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Bold interactive trigger with high contrast.",
+      "html": "<button class=\"ds-btn-primary\">CONFIRM INITIATION</button>",
+      "css": ".ds-btn-primary { background: #ffffff; color: #111111; padding: 12px 24px; font-family: 'Geist', sans-serif; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.2em; border: none; border-radius: 0px !important; cursor: pointer; transition: background-color 150ms ease; } .ds-btn-primary:hover { background-color: #c4c7c8; }"
+    },
+    {
+      "name": "Tactical Outline Input",
+      "kind": "input",
+      "refersTo": "input-text",
+      "description": "Fine-ruled input block for code entry and searches.",
+      "html": "<input type=\"text\" class=\"ds-input-tactical\" placeholder=\"ENTER COORDINATES...\" />",
+      "css": ".ds-input-tactical { background: #111111; color: #e3e2e2; padding: 12px 16px; font-family: 'Geist', sans-serif; font-size: 12px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 0px !important; width: 100%; outline: none; } .ds-input-tactical:focus { border-color: rgba(255, 255, 255, 0.4); }"
+    },
+    {
+      "name": "Steel Container Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Deep steel container for grouping content blocks.",
+      "html": "<div class=\"ds-card-steel\"><div class=\"ds-card-title\">SPECIMEN // 01</div><p class=\"ds-card-body\">High-performance tactical cargo with integrated harness system.</p></div>",
+      "css": ".ds-card-steel { background: #111111; border: 1px solid rgba(255, 255, 255, 0.1); padding: 16px; border-radius: 0px !important; } .ds-card-title { font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; color: #ffffff; } .ds-card-body { font-family: 'Geist', sans-serif; font-size: 12px; line-height: 1.5; color: #c4c7c8; margin: 0; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Tactical Blueprint",
+    "overview": "The STITCH DSTRKT design system is structured as a technical, high-performance tactical interface. It prioritizes structure, utility, and precision over decorative styling. The aesthetic simulates schematic architectural drawings and tactical military readouts: featuring sharp borders, structural grids, monospaced-style annotations, and explicit mechanical alignments.",
+    "keyCharacteristics": [
+      "Brutalist Sharpness: Every single container, button, and input has a zero-radius (0px) sharp corner.",
+      "Structural Blueprint Mesh: A subtle geometric background grid overlay (40px) defines the canvas.",
+      "Tactical Utility Details: Display of structural metadata like system coordinates, ping pulses, and active keys."
+    ],
+    "rules": [
+      { "name": "The Monochrome Restraint Rule", "body": "Saturated colors are strictly forbidden for decorative accents. Color is exclusively used to communicate real status.", "section": "colors" },
+      { "name": "The Shadow Proscription Rule", "body": "Drop shadows are completely prohibited. Depth is structural (Tonal Grid Layering), not ambient.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do force sharp corners (border-radius: 0px !important) on all active UI blocks, cards, badges, and modals.",
+      "Do align components strictly to the 40px x 40px layout grid established by the background mesh.",
+      "Do frame sections with fine, 1px solid tactical outlines instead of box shadows."
+    ],
+    "donts": [
+      "Don't use any rounded corners (border-radius > 0px), even subtle 2px or 4px radii.",
+      "Don't use ambient drop shadows (box-shadow) to create floating cards.",
+      "Don't animate image scale, rotation, or translation on hover. Keep images stable."
+    ]
+  }
+}

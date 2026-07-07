@@ -8,9 +8,7 @@ if (isCloudflare) {
   // Cloudflare Environment: Cloudflare D1 Database
   const { drizzle } = await import('drizzle-orm/d1')
   
-  // Hide import from Vite static analysis using a variable path (resolves at worker runtime only)
-  const workerModuleName = 'cloudflare:workers'
-  const { env } = await import(workerModuleName) as any
+  const { env } = await import(/* @vite-ignore */ 'cloudflare:workers') as any
 
   db = drizzle(env.DB, { schema })
 } else {

@@ -45,6 +45,8 @@ function StorefrontLanding() {
   // Local state for interactive sizes
   const [selectedSizes, setSelectedSizes] = useState<Record<string, string>>({})
   const [addedItemIds, setAddedItemIds] = useState<Record<string, boolean>>({})
+  const [showFilters, setShowFilters] = useState(false)
+  const [showSizeChart, setShowSizeChart] = useState(false)
 
   // Set default sizes for products
   useEffect(() => {
@@ -102,20 +104,18 @@ function StorefrontLanding() {
   }
 
   return (
-    <main className="bg-[#050505] min-h-screen text-[var(--on-surface)] overflow-x-hidden pt-20">
+    <main className="bg-[#0a0a0a] min-h-screen text-[var(--on-surface)] overflow-x-hidden pt-20">
       
       {/* 1. Full-Bleed Cyberpunk Hero Section */}
       <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">
         {/* Ambient Dark overlay and visual grids */}
         <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-radial-gradient from-transparent via-black/80 to-[#050505] z-10" />
+          <div className="absolute inset-0 bg-radial-gradient from-transparent via-black/80 to-[#0a0a0a] z-10" />
           <img
             alt="DSTRKT Hero Background"
             className="w-full h-full object-cover object-center grayscale brightness-[0.25] scale-105 animate-[pulse_10s_infinite_alternate]"
             src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1600&auto=format&fit=crop"
           />
-          {/* Vertical moving scanning line overlay */}
-          <div className="absolute top-0 left-0 w-full h-[2px] bg-white/20 shadow-[0_0_15px_rgba(255,255,255,0.5)] animate-[bounce_8s_infinite] pointer-events-none z-10" />
           {/* Futuristic technical specs overlay */}
           <div className="absolute top-28 left-8 hidden lg:flex flex-col gap-1 font-mono text-[9px] text-zinc-500 tracking-wider uppercase z-20">
             <span>DSTRKT COORDINATE: 35.6764° N, 139.6500° E</span>
@@ -126,7 +126,7 @@ function StorefrontLanding() {
             <span>STITCH_DSTRKT // NEW ARCHETYPE RENDER</span>
             <span>REINFORCED FABRIC TECHNOLOGY v2.04</span>
             <span className="flex items-center justify-end gap-1.5">
-              <span className="h-1.5 w-1.5 bg-green-500 rounded-full animate-ping" />
+              <span className="h-1.5 w-1.5 bg-green-500 rounded-none" />
               LIVE SYNCHRONIZATION OPERATIONAL
             </span>
           </div>
@@ -134,14 +134,14 @@ function StorefrontLanding() {
 
         {/* Hero typography & content */}
         <div className="relative z-10 px-8 w-full max-w-[1440px] mx-auto text-center flex flex-col items-center">
-          <div className="inline-flex items-center gap-2 border border-white/10 bg-white/5 backdrop-blur-xl px-4 py-2 mb-6 font-mono text-[10px] tracking-[0.2em] text-white/80 uppercase">
+          <div className="inline-flex items-center gap-2 border border-white/20 bg-[#111111] px-4 py-2 mb-6 font-mono text-[10px] tracking-[0.2em] text-white/80 uppercase">
             <Layers className="h-3 w-3 text-white/60" />
             <span>FABRIC ENGINE v2.0 // DEPLOYED SERIES</span>
           </div>
           
           <h1 className="font-display font-extrabold text-5xl md:text-7xl lg:text-9xl leading-none text-white uppercase tracking-tighter max-w-5xl mb-6">
-            <span className="block text-transparent bg-clip-text bg-gradient-to-b from-white to-zinc-500">STITCH</span>
-            <span className="block tracking-[0.1em] text-shadow-[0_0_30px_rgba(255,255,255,0.15)] text-3xl md:text-5xl lg:text-6xl font-normal text-zinc-400 mt-2 font-mono">DSTRKT</span>
+            <span className="block text-white">STITCH</span>
+            <span className="block tracking-[0.1em] text-3xl md:text-5xl lg:text-6xl font-normal text-zinc-400 mt-2 font-mono">DSTRKT</span>
           </h1>
 
           <p className="font-mono text-xs md:text-sm text-zinc-400 max-w-xl mb-12 tracking-wide uppercase leading-relaxed">
@@ -151,14 +151,14 @@ function StorefrontLanding() {
           <div className="flex flex-col sm:flex-row gap-4">
             <button
               onClick={scrollToCatalog}
-              className="bg-white text-black font-mono text-xs tracking-widest px-10 py-5 hover:bg-zinc-200 transition-all duration-300 font-bold flex items-center justify-center gap-2 uppercase border border-white"
+              className="bg-white text-black font-mono text-xs tracking-widest px-10 py-5 hover:bg-zinc-200 font-bold flex items-center justify-center gap-2 uppercase border border-white"
             >
               <span>EXPLORE HARDWARE CATALOG</span>
               <Zap className="h-3.5 w-3.5 fill-current" />
             </button>
             <Link
               to="/about"
-              className="border border-white/20 bg-white/5 hover:bg-white/10 text-white font-mono text-xs tracking-widest px-10 py-5 transition-all duration-300 font-bold flex items-center justify-center gap-2 uppercase backdrop-blur-md"
+              className="border border-white/20 bg-[#111111] hover:bg-zinc-800 text-white font-mono text-xs tracking-widest px-10 py-5 font-bold flex items-center justify-center gap-2 uppercase"
             >
               <span>VIEW DESIGN MANIFESTO</span>
               <Crosshair className="h-3.5 w-3.5 text-zinc-400" />
@@ -169,23 +169,28 @@ function StorefrontLanding() {
         {/* Scroll Indicator */}
         <button
           onClick={scrollToCatalog}
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex flex-col items-center gap-2 font-mono text-[9px] tracking-[0.3em] text-zinc-500 hover:text-white uppercase transition-all duration-300"
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex flex-col items-center gap-2 font-mono text-[9px] tracking-[0.3em] text-zinc-500 hover:text-white uppercase"
         >
           <span>SCROLL TO SYSTEM REPOSITORY</span>
           <ArrowDown className="h-4 w-4 animate-bounce" />
         </button>
       </section>
 
-      {/* Marquee Banner */}
+      {/* Marquee Banner (Converted to static high-end editorial stillness readouts) */}
       <div className="w-full h-14 bg-black border-y border-white/5 flex items-center px-8 overflow-hidden z-20 relative">
         <div className="flex items-center gap-6 overflow-hidden w-full">
           <span className="font-mono text-xs text-white font-bold tracking-widest uppercase shrink-0 flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 bg-white rounded-full animate-ping" />
+            <span className="h-1.5 w-1.5 bg-white rounded-none" />
             SYSTEM STREAM:
           </span>
-          <div className="animate-marquee whitespace-nowrap font-mono text-xs text-zinc-400 uppercase tracking-widest">
-            <span>DSTRKT TECHWEAR // MODULAR CONFIGURATIONS ACTIVE — ALL WEATHER GHOST SHELLS IN STOCK — ZERO TOLERANCE COLD LAYERINGS — FREE DISPATCH SECURED ON CART OVER $500 — </span>
-            <span>DSTRKT TECHWEAR // MODULAR CONFIGURATIONS ACTIVE — ALL WEATHER GHOST SHELLS IN STOCK — ZERO TOLERANCE COLD LAYERINGS — FREE DISPATCH SECURED ON CART OVER $500 — </span>
+          <div className="font-mono text-xs text-zinc-400 uppercase tracking-widest flex flex-wrap gap-x-8 gap-y-2">
+            <span>DSTRKT TECHWEAR // MODULAR CONFIGURATIONS ACTIVE</span>
+            <span className="text-zinc-700">|</span>
+            <span>ALL WEATHER GHOST SHELLS IN STOCK</span>
+            <span className="text-zinc-700">|</span>
+            <span>ZERO TOLERANCE COLD LAYERINGS</span>
+            <span className="text-zinc-700">|</span>
+            <span>FREE DISPATCH SECURED ON CART OVER $500</span>
           </div>
         </div>
       </div>
@@ -193,10 +198,19 @@ function StorefrontLanding() {
       {/* 2. Public Catalog Section */}
       <div id="catalog-section" className="max-w-[1440px] mx-auto px-8 py-20">
         
+        {/* Mobile Filter Toggle Button */}
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className="w-full lg:hidden border border-white/10 bg-[#111111] hover:bg-zinc-800 text-white font-mono text-xs tracking-widest py-4 px-6 flex justify-between items-center uppercase mb-4"
+        >
+          <span>{showFilters ? 'HIDE FILTERS [-]' : 'SHOW FILTERS [+]'}</span>
+          <span className="text-[10px] text-zinc-400">({filteredItems.length} ITEMS)</span>
+        </button>
+
         <div className="flex flex-col lg:flex-row gap-12">
           
           {/* Sticky Left Sidebar Filters */}
-          <aside className="lg:col-span-3 lg:w-[280px] border border-white/5 bg-zinc-950/60 backdrop-blur-xl p-8 h-fit lg:sticky lg:top-24 z-10 space-y-8">
+          <aside className={`lg:col-span-3 lg:w-[280px] border border-white/10 bg-[#111111] p-8 h-fit lg:sticky lg:top-24 z-10 space-y-8 ${showFilters ? 'block' : 'hidden lg:block'}`}>
             <div>
               <span className="text-[10px] font-mono tracking-[0.2em] text-zinc-500 block mb-2 uppercase">INDEX INVENTORY</span>
               <h3 className="font-display text-xl font-extrabold text-white uppercase tracking-tight">REPOSITORY</h3>
@@ -212,7 +226,7 @@ function StorefrontLanding() {
                   placeholder="SEARCH ARCHIVE..."
                   value={searchQuery}
                   onChange={(e) => updateSearchQuery(e.target.value)}
-                  className="w-full bg-black/40 border border-white/10 text-white font-mono text-xs pl-10 pr-4 py-3 placeholder-zinc-600 focus:outline-none focus:border-white/40 transition-colors"
+                  className="w-full bg-black border border-white/10 text-white font-mono text-xs pl-10 pr-4 py-3 placeholder-zinc-600 focus:outline-none focus:border-white/40"
                 />
               </div>
             </div>
@@ -227,7 +241,7 @@ function StorefrontLanding() {
                     <button
                       key={cat}
                       onClick={() => updateCategory(cat)}
-                      className={`flex justify-between items-center px-4 py-3 font-mono uppercase tracking-wider transition-all duration-200 border border-transparent ${
+                      className={`flex justify-between items-center px-4 py-3 font-mono uppercase tracking-wider border border-transparent ${
                         selectedCategory === cat
                           ? 'bg-white text-black border-white font-bold'
                           : 'text-zinc-400 hover:text-white hover:bg-white/5 hover:border-white/10'
@@ -256,7 +270,7 @@ function StorefrontLanding() {
                   <button
                     key={st.id}
                     onClick={() => updateStockFilter(st.id as 'all' | 'in-stock' | 'low-stock' | 'out-of-stock')}
-                    className={`text-left px-4 py-3 font-mono uppercase tracking-wider transition-all duration-200 border border-transparent ${
+                    className={`text-left px-4 py-3 font-mono uppercase tracking-wider border border-transparent ${
                       stockFilter === st.id ? 'bg-white text-black font-bold' : 'text-zinc-400 hover:text-white hover:bg-white/5 hover:border-white/10'
                     }`}
                   >
@@ -264,6 +278,17 @@ function StorefrontLanding() {
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Sizing Chart Toggle Panel */}
+            <div className="space-y-2">
+              <label className="text-[9px] font-mono tracking-widest text-zinc-400 block uppercase">PRODUCT SPECS</label>
+              <button
+                onClick={() => setShowSizeChart(true)}
+                className="w-full border border-white/10 bg-[#111111] hover:bg-zinc-800 text-zinc-300 font-mono text-[10px] tracking-wider py-2.5 px-4 flex items-center justify-center gap-2 uppercase"
+              >
+                <span>VIEW SIZING SPEC CHART</span>
+              </button>
             </div>
 
             {/* Technical Node Indicator */}
@@ -308,15 +333,15 @@ function StorefrontLanding() {
                   return (
                     <div
                       key={item.id}
-                      className="group relative border border-white/5 bg-zinc-950/20 backdrop-blur-md flex flex-col justify-between hover:border-white/20 transition-all duration-500 hover:shadow-[0_0_30px_rgba(255,255,255,0.02)]"
+                      className="group relative border border-white/10 bg-[#111111] flex flex-col justify-between hover:border-white/40"
                     >
                       {/* Top Action / Hover Indicator */}
-                      <Link to="/products/$id" params={{ id: item.id }} className="block overflow-hidden relative aspect-[4/5] bg-neutral-900 border-b border-white/5">
+                      <Link to="/products/$id" params={{ id: item.id }} className="block overflow-hidden relative aspect-[4/5] bg-[#0a0a0a] border-b border-white/10">
                         {/* Hover Zoom & Grayscale Overlay */}
                         <img
                           src={imgUrl}
                           alt={item.name}
-                          className="w-full h-full object-cover grayscale brightness-90 group-hover:scale-105 group-hover:brightness-100 group-hover:grayscale-0 transition-all duration-700"
+                          className="w-full h-full object-cover grayscale brightness-90 group-hover:brightness-100 group-hover:grayscale-0"
                         />
                         
                         {/* Visual scanning mesh layer on image */}
@@ -324,19 +349,19 @@ function StorefrontLanding() {
 
                         {/* Top Left Status Tags */}
                         <div className="absolute top-4 left-4 flex flex-col gap-1 z-10">
-                          <span className="inline-flex items-center border border-white/10 bg-black/60 backdrop-blur-md px-2 py-0.5 font-mono text-[8px] text-zinc-300 uppercase tracking-widest">
+                          <span className="inline-flex items-center border border-white/10 bg-[#0a0a0a] px-2 py-0.5 font-mono text-[8px] text-zinc-300 uppercase tracking-widest">
                             #{item.id.slice(0, 5)}
                           </span>
                           {isOutOfStock ? (
-                            <span className="inline-flex items-center border border-red-500/20 bg-red-950/70 backdrop-blur-md px-2 py-0.5 font-mono text-[8px] text-red-400 uppercase tracking-widest font-bold">
+                            <span className="inline-flex items-center border border-red-500/20 bg-red-950/90 px-2 py-0.5 font-mono text-[8px] text-red-400 uppercase tracking-widest font-bold">
                               DEPLETED
                             </span>
                           ) : isLowStock ? (
-                            <span className="inline-flex items-center border border-zinc-500/30 bg-zinc-900/80 backdrop-blur-md px-2 py-0.5 font-mono text-[8px] text-zinc-400 uppercase tracking-widest font-bold">
+                            <span className="inline-flex items-center border border-zinc-500/30 bg-zinc-900/90 px-2 py-0.5 font-mono text-[8px] text-zinc-400 uppercase tracking-widest font-bold">
                               LOW ({item.stock} LEFT)
                             </span>
                           ) : (
-                            <span className="inline-flex items-center border border-white/10 bg-black/60 backdrop-blur-md px-2 py-0.5 font-mono text-[8px] text-zinc-400 uppercase tracking-widest">
+                            <span className="inline-flex items-center border border-white/10 bg-[#0a0a0a] px-2 py-0.5 font-mono text-[8px] text-zinc-400 uppercase tracking-widest">
                               OPERATIONAL
                             </span>
                           )}
@@ -344,14 +369,14 @@ function StorefrontLanding() {
 
                         {/* Bottom Right Category Badge */}
                         <div className="absolute bottom-4 right-4 z-10">
-                          <span className="inline-flex items-center gap-1.5 border border-white/10 bg-black/70 backdrop-blur-md px-2.5 py-1 font-mono text-[9px] text-white uppercase tracking-wider">
+                          <span className="inline-flex items-center gap-1.5 border border-white/10 bg-[#0a0a0a] px-2.5 py-1 font-mono text-[9px] text-white uppercase tracking-wider">
                             <Tag className="h-2.5 w-2.5 text-zinc-400" />
                             {item.category}
                           </span>
                         </div>
 
                         {/* Interactive overlay icon on image hover */}
-                        <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center">
                           <div className="border border-white/20 bg-black/80 px-4 py-3 font-mono text-[10px] text-white tracking-widest uppercase flex items-center gap-2">
                             <Eye className="h-4 w-4" />
                             <span>VIEW ARCHITECTURE</span>
@@ -365,7 +390,7 @@ function StorefrontLanding() {
                           <Link
                             to="/products/$id"
                             params={{ id: item.id }}
-                            className="font-display font-bold text-lg text-white uppercase block leading-tight tracking-tight hover:text-white/80 transition-colors"
+                            className="font-display font-bold text-lg text-white uppercase block leading-tight tracking-tight hover:text-white/80"
                           >
                             {item.name}
                           </Link>
@@ -377,8 +402,8 @@ function StorefrontLanding() {
                         {/* Size configuration (only if not an accessory) */}
                         {!isOutOfStock && item.category !== 'Accessories' && (
                           <div className="space-y-1.5 pt-2">
-                            <span className="font-mono text-[8px] text-zinc-500 block uppercase tracking-wider">CHOOSE HARDWARE SPEC:</span>
-                            <div className="flex gap-1">
+                            <span className="font-mono text-[8px] text-zinc-500 block uppercase tracking-wider">SELECT SPEC / SIZE:</span>
+                            <div className="flex gap-2 flex-wrap">
                               {(item.category === 'Pants' ? ['30', '32', '34'] : item.category === 'Footwear' ? ['US 9', 'US 10', 'US 11'] : ['S', 'M', 'L']).map((sz) => (
                                 <button
                                   key={sz}
@@ -386,10 +411,10 @@ function StorefrontLanding() {
                                     e.preventDefault()
                                     setSelectedSizes((prev) => ({ ...prev, [item.id]: sz }))
                                   }}
-                                  className={`border text-[9px] font-mono px-2 py-1 uppercase transition-all ${
+                                  className={`border text-[10px] font-mono w-11 h-11 flex items-center justify-center uppercase ${
                                     size === sz
                                       ? 'border-white bg-white text-black font-bold'
-                                      : 'border-white/5 bg-zinc-900/40 text-zinc-400 hover:border-white/20 hover:text-white'
+                                      : 'border-white/10 bg-zinc-900 text-zinc-400 hover:border-white/40 hover:text-white'
                                   }`}
                                 >
                                   {sz}
@@ -411,7 +436,7 @@ function StorefrontLanding() {
                           ) : (
                             <button
                               onClick={(e) => handleQuickAdd(item, e)}
-                              className={`w-full font-mono text-[10px] tracking-widest py-3.5 transition-all duration-300 font-bold flex items-center justify-center gap-2 uppercase border ${
+                              className={`w-full font-mono text-[10px] tracking-widest py-3.5 font-bold flex items-center justify-center gap-2 uppercase border ${
                                 addedItemIds[item.id]
                                   ? 'bg-zinc-950 text-white border-white'
                                   : 'bg-white text-black hover:bg-zinc-200 border-white'
@@ -425,7 +450,7 @@ function StorefrontLanding() {
                               ) : (
                                 <>
                                   <ShoppingCart className="h-3.5 w-3.5" />
-                                  <span>DEPLOY TO CART</span>
+                                  <span>ADD TO CART</span>
                                 </>
                               )}
                             </button>
@@ -436,12 +461,22 @@ function StorefrontLanding() {
                   )
                 })
               ) : (
-                <div className="col-span-full border border-white/5 bg-zinc-950/20 p-16 text-center font-mono">
-                  <Cpu className="h-10 w-10 text-zinc-600 mx-auto mb-4 animate-pulse" />
-                  <span className="font-bold text-white uppercase block mb-1">NO ARCHIVES IDENTIFIED</span>
-                  <p className="text-zinc-600 text-xs uppercase tracking-wider">
-                    Adjust catalog parameters. Active stream filter yielded empty set.
+                <div className="col-span-full border border-white/10 bg-[#111111] p-16 text-center font-mono">
+                  <Cpu className="h-10 w-10 text-zinc-600 mx-auto mb-4" />
+                  <span className="font-bold text-white uppercase block mb-2">NO PRODUCTS MATCH YOUR SEARCH</span>
+                  <p className="text-zinc-400 text-xs uppercase tracking-wider mb-6 max-w-md mx-auto">
+                    We couldn't find any products matching your search or category filters. Try resetting the filters to explore the rest of our collection.
                   </p>
+                  <button
+                    onClick={() => {
+                      updateSearchQuery('')
+                      updateCategory('All')
+                      updateStockFilter('all')
+                    }}
+                    className="border border-white bg-white hover:bg-zinc-200 text-black font-bold uppercase text-[10px] tracking-widest px-6 py-3"
+                  >
+                    RESET ALL FILTERS
+                  </button>
                 </div>
               )}
             </div>
@@ -483,7 +518,7 @@ function StorefrontLanding() {
                 stat: 'X-PAC REINFORCED'
               }
             ].map((feat) => (
-              <div key={feat.id} className="border border-white/5 bg-zinc-950/40 p-8 space-y-6">
+              <div key={feat.id} className="border border-white/10 bg-[#111111] p-8 space-y-6">
                 <div className="flex justify-between items-start">
                   <span className="text-xs text-zinc-500 font-bold">{feat.id}</span>
                   <span className="inline-flex border border-white/10 px-2 py-0.5 text-[9px] text-zinc-400 font-bold">{feat.stat}</span>
@@ -497,6 +532,55 @@ function StorefrontLanding() {
           </div>
         </div>
       </section>
+
+      {/* Sizing Specs Chart Modal */}
+      {showSizeChart && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+          <div className="bg-[#111111] border border-white/20 max-w-lg w-full p-8 space-y-6 relative">
+            <button
+              onClick={() => setShowSizeChart(false)}
+              className="absolute top-4 right-4 text-zinc-500 hover:text-white font-mono text-xs uppercase"
+            >
+              [ CLOSE ]
+            </button>
+            <div>
+              <span className="text-[9px] font-mono tracking-[0.2em] text-zinc-500 block uppercase">TECHNICAL CALIBRATION</span>
+              <h3 className="font-display text-lg font-bold text-white uppercase tracking-tight mt-1">SIZE & SPECIFICATION CHART</h3>
+            </div>
+            
+            <div className="border border-white/5 divide-y divide-white/5 font-mono text-xs text-zinc-400">
+              <div className="grid grid-cols-4 bg-zinc-900 p-3 font-bold text-white uppercase text-[10px] tracking-wider">
+                <span>SPEC</span>
+                <span>CHEST</span>
+                <span>WAIST</span>
+                <span>HEIGHT</span>
+              </div>
+              <div className="grid grid-cols-4 p-3">
+                <span className="text-white font-bold">S / 30</span>
+                <span>36-38"</span>
+                <span>30-31"</span>
+                <span>165-172cm</span>
+              </div>
+              <div className="grid grid-cols-4 p-3">
+                <span className="text-white font-bold">M / 32</span>
+                <span>38-40"</span>
+                <span>32-33"</span>
+                <span>172-180cm</span>
+              </div>
+              <div className="grid grid-cols-4 p-3">
+                <span className="text-white font-bold">L / 34</span>
+                <span>41-43"</span>
+                <span>34-35"</span>
+                <span>180-188cm</span>
+              </div>
+            </div>
+
+            <p className="text-[10px] font-mono text-zinc-500 uppercase leading-relaxed">
+              * NOTE: ALL MEASUREMENTS ARE DESIGNED FOR AN ATTACHED TACTICAL SILHOUETTE. FABRIC COMPOSITION SUPPORTS 2% SPANDEX REINFORCEMENT STRETCH.
+            </p>
+          </div>
+        </div>
+      )}
     </main>
   )
 }
