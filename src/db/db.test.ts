@@ -19,8 +19,9 @@ vi.mock('better-sqlite3', () => {
 import * as schema from './schema'
 import { auth } from '../lib/auth'
 import { importAliExpressProductHandler } from '../lib/scraperSession'
-import { getSettingsHandler, updateSettingsHandler } from '../lib/settingsSession'
+import { getSettingsHandler, updateSettingsHandler, getSettingsEffect, updateSettingsEffect } from '../lib/settingsSession'
 import { db } from './index'
+import { Effect } from 'effect'
 
 describe('DSTRKT Database Schema & Authentication Integration', () => {
   test('should verify database tables are correctly defined in schema', () => {
@@ -367,3 +368,72 @@ describe('Global Settings Control & DB Synchronization', () => {
     updateSpy.mockRestore()
   })
 })
+
+describe('Effect-TS Pure Functional Pipelines', () => {
+  const mockAdminSession = {
+    session: {
+      id: 'session-id',
+      userId: 'user-id',
+      token: 'token',
+      expiresAt: new Date(Date.now() + 3600000),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      ipAddress: null,
+      userAgent: null,
+    },
+    user: {
+      id: 'user-id',
+      email: 'admin@dstrkt.com',
+      name: 'Admin User',
+      emailVerified: true,
+      image: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+  }
+
+  const mockNonAdminSession = {
+    session: {
+      id: 'session-id-2',
+      userId: 'user-id-2',
+      token: 'token-2',
+      expiresAt: new Date(Date.now() + 3600000),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      ipAddress: null,
+      userAgent: null,
+    },
+    user: {
+      id: 'user-id-2',
+      email: 'user@dstrkt.com',
+      name: 'Regular User',
+      emailVerified: true,
+      image: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+  }
+
+  test('getSettingsEffect fails with UnauthorizedError when session is non-admin', async () => {
+    const result = await Effect.runPromiseExit(getSettingsEffect({ session: mockNonAdminSession }))
+    expect(result._tag).toBe('Failure')
+    if (result._tag === 'Failure') {
+      const cause = result.cause
+      expect(cause._tag).toBe('Fail')
+      // @ts-expect-error - cause.error is present in Fail cause
+      expect(cause.error._tag).toBe('UnauthorizedError')
+    }
+  })
+
+  test('updateSettingsEffect fails with InvalidValueError for negative multipliers', async () => {
+    const result = await Effect.runPromiseExit(updateSettingsEffect({ marginMultiplier: -1.5 }, { session: mockAdminSession }))
+    expect(result._tag).toBe('Failure')
+    if (result._tag === 'Failure') {
+      const cause = result.cause
+      expect(cause._tag).toBe('Fail')
+      // @ts-expect-error - cause.error is present in Fail cause
+      expect(cause.error._tag).toBe('InvalidValueError')
+    }
+  })
+})
+
