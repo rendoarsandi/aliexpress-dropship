@@ -8,7 +8,8 @@ if (isCloudflare) {
   // Cloudflare Environment: Cloudflare D1 Database
   const { drizzle } = await import('drizzle-orm/d1')
   
-  const { env } = await import(/* @vite-ignore */ 'cloudflare:workers') as any
+  const cfWorkersModule = 'cloudflare:workers'
+  const { env } = await import(/* @vite-ignore */ cfWorkersModule) as any
 
   db = drizzle(env.DB, { schema })
 } else {
