@@ -1,7 +1,15 @@
 import { createServerFn } from '@tanstack/react-start'
+import { decodeCreateCheckoutSession } from './schemas'
 
 export const createCheckoutSessionFn = createServerFn({ method: 'POST' })
-  .validator((data: { email: string; items: Array<{ name: string; price: number; quantity: number }>; origin: string }) => data)
+  .validator((data: unknown) => {
+    try {
+      return decodeCreateCheckoutSession(data)
+    } catch (error) {
+      console.error('Create checkout session validation failed via @effect/schema:', error)
+      throw new Error(error instanceof Error ? error.message : 'Invalid checkout session payload')
+    }
+  })
   .handler(async ({ data }) => {
     const stripeKey = typeof process !== 'undefined' ? process.env.STRIPE_SECRET_KEY : null
     if (stripeKey) {

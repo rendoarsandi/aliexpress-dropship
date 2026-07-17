@@ -114,10 +114,40 @@ export const CheckoutPayloadSchema = S.Struct({
 export type CheckoutPayload = S.Schema.Type<typeof CheckoutPayloadSchema>;
 
 // ==========================================
-// 6. Decoders & Validators
+// 6. Server Function Input Schemas
+// ==========================================
+export const ImportAliExpressProductSchema = S.Struct({
+  url: S.String.pipe(
+    S.pattern(/^https?:\/\//),
+    S.annotations({ message: () => "Must be a valid URL starting with http/https" })
+  )
+});
+
+export const UpdateSettingsSchema = S.Struct({
+  marginMultiplier: S.Number.pipe(
+    S.greaterThan(0),
+    S.annotations({ message: () => "Margin multiplier must be a positive number" })
+  )
+});
+
+export const CreateCheckoutSessionSchema = S.Struct({
+  email: EmailSchema,
+  items: S.Array(S.Struct({
+    name: NonEmptyString,
+    price: NonNegativeNumber,
+    quantity: PositiveInteger
+  })),
+  origin: S.String
+});
+
+// ==========================================
+// 7. Decoders & Validators
 // ==========================================
 export const decodeProduct = S.decodeUnknownSync(ProductSchema);
 export const decodeOrder = S.decodeUnknownSync(OrderSchema);
 export const decodeUser = S.decodeUnknownSync(UserSchema);
 export const decodeSession = S.decodeUnknownSync(SessionSchema);
 export const decodeCheckoutPayload = S.decodeUnknownSync(CheckoutPayloadSchema);
+export const decodeImportAliExpressProduct = S.decodeUnknownSync(ImportAliExpressProductSchema);
+export const decodeUpdateSettings = S.decodeUnknownSync(UpdateSettingsSchema);
+export const decodeCreateCheckoutSession = S.decodeUnknownSync(CreateCheckoutSessionSchema);
