@@ -178,11 +178,11 @@ export const importAliExpressProductEffect = (
     // Raw price >= $30 -> Base multiplier (e.g. 1.5x)
     let tierMultiplier = baseMultiplier
     if (validated.rawPrice < 30) {
-      tierMultiplier = Number((baseMultiplier * 1.3333333333333333).toFixed(2))
+      tierMultiplier = baseMultiplier * (4 / 3)
     }
 
-    // Apply the price markup multiplier
-    const finalPrice = Number((validated.rawPrice * tierMultiplier).toFixed(2))
+    // Apply the price markup multiplier with single rounding
+    const finalPrice = Math.round(validated.rawPrice * tierMultiplier * 100) / 100
 
     // Generate unique ID for product insert
     const productId = typeof crypto !== 'undefined' && crypto.randomUUID

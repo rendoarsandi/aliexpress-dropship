@@ -44,7 +44,10 @@ const getSession = (context?: { session?: unknown }) =>
 const requireAdmin = (context?: { session?: unknown }) =>
   Effect.gen(function* () {
     const session = yield* getSession(context)
-    if (!session || !session.user || session.user.email.toLowerCase() !== 'admin@dstrkt.com') {
+    const adminEmails = (process.env.ADMIN_EMAILS || 'admin@dstrkt.com').toLowerCase().split(',').map(e => e.trim())
+    const userEmail = session?.user?.email?.toLowerCase()
+    const isAdmin = session?.user?.role === 'admin' || (userEmail && adminEmails.includes(userEmail))
+    if (!session || !session.user || !isAdmin) {
       return yield* Effect.fail(new UnauthorizedError())
     }
     return session
