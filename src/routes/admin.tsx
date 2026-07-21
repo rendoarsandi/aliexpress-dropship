@@ -291,7 +291,8 @@ function Dashboard() {
         }
 
         techWearCollection.insert(clientItem)
-        setScraperSuccess(`SUCCESSFULLY INGESTED: ${clientItem.name}`)
+        const multiplierInfo = serverProd.multiplier ? ` [${serverProd.multiplier}x TIER MARKUP]` : ''
+        setScraperSuccess(`SUCCESSFULLY INGESTED: ${clientItem.name}${multiplierInfo}`)
         setScraperLog('TRANSACTION COMMITTED')
         setScraperProgress(100)
         setAliExpressUrl('')
