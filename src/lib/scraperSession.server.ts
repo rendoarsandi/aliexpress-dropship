@@ -45,6 +45,32 @@ interface ScraperResponse {
   }
 }
 
+// Custom Domain Errors
+export class UnauthorizedError {
+  readonly _tag = 'UnauthorizedError'
+  constructor(readonly message: string = 'UNAUTHORIZED: ACTIVE SESSION REQUIRED FOR OPERATIONS') {}
+}
+
+export class InvalidSchemeError {
+  readonly _tag = 'InvalidSchemeError'
+  constructor(readonly message: string = 'INVALID SCHEME: TARGET EXCLUSION REJECTED') {}
+}
+
+export class UnrecognizedAdapterError {
+  readonly _tag = 'UnrecognizedAdapterError'
+  constructor(readonly message: string = 'UNRECOGNIZED BLOCKCHAIN ADAPTER: MUST BE ALIEXPRESS NODE') {}
+}
+
+export class ValidationError {
+  readonly _tag = 'ValidationError'
+  constructor(readonly message: string) {}
+}
+
+export class DatabaseError {
+  readonly _tag = 'DatabaseError'
+  constructor(readonly message: string) {}
+}
+
 // Core Effect pipeline for AliExpress product import
 export const importAliExpressProductEffect = (
   data: { url: string },
@@ -66,18 +92,25 @@ export const importAliExpressProductEffect = (
     }
 
     if (!session || !session.user) {
-      return yield* Effect.fail({ error: 'UNAUTHORIZED: ACTIVE SESSION REQUIRED FOR OPERATIONS' })
+      return yield* Effect.fail(new UnauthorizedError())
     }
 
     // 2. Input Sanitization & Boundary Validation
     if (!url || !url.trim().startsWith('http')) {
-      return yield* Effect.fail({ error: 'INVALID SCHEME: TARGET EXCLUSION REJECTED' })
+      return yield* Effect.fail(new InvalidSchemeError())
+    }
+
+    try {
+      const parsedUrl = new URL(url)
+      const hostname = parsedUrl.hostname.toLowerCase()
+      if (!hostname.endsWith('aliexpress.com') && !hostname.endsWith('aliexpress.ru')) {
+        return yield* Effect.fail(new UnrecognizedAdapterError())
+      }
+    } catch {
+      return yield* Effect.fail(new InvalidSchemeError())
     }
 
     const lowerUrl = url.toLowerCase()
-    if (!lowerUrl.includes('aliexpress.com') && !lowerUrl.includes('aliexpress.ru')) {
-      return yield* Effect.fail({ error: 'UNRECOGNIZED BLOCKCHAIN ADAPTER: MUST BE ALIEXPRESS NODE' })
-    }
 
     // Retrieve API Secret Keys safely from environment
     const rapidapiKey = typeof process !== 'undefined' ? process.env.RAPIDAPI_KEY : null
@@ -152,7 +185,7 @@ export const importAliExpressProductEffect = (
     // Validate the scraped product using Effect schema
     const validated = yield* Effect.try({
       try: () => S.decodeUnknownSync(ScrapedProductFieldsSchema)(scrapedData),
-      catch: (err) => ({ error: `VALIDATION FAILURE: ${err instanceof Error ? err.message : 'Scraped product data did not meet schema constraints'}` })
+      catch: (err) => new ValidationError(`VALIDATION FAILURE: ${err instanceof Error ? err.message : 'Scraped product data did not meet schema constraints'}`)
     })
 
     // Retrieve markup multiplier from settings table
@@ -209,7 +242,7 @@ export const importAliExpressProductEffect = (
         sourceUrl: url,
         createdAt: Date.now()
       }),
-      catch: (err) => ({ error: `DATABASE ERROR: ${err instanceof Error ? err.message : 'Failed to save product record'}` })
+      catch: (err) => new DatabaseError(`DATABASE ERROR: ${err instanceof Error ? err.message : 'Failed to save product record'}`)
     })
 
     return {
@@ -232,6 +265,9 @@ export async function importAliExpressProductHandler(
 ) {
   const program = importAliExpressProductEffect(data, context).pipe(
     Effect.catchAll((err: any) => {
+      if (err && typeof err === 'object' && 'message' in err) {
+        return Effect.succeed({ error: err.message })
+      }
       if (err && typeof err === 'object' && 'error' in err) {
         return Effect.succeed(err)
       }
@@ -240,3 +276,4 @@ export async function importAliExpressProductHandler(
   )
   return Effect.runPromise(program)
 }
+

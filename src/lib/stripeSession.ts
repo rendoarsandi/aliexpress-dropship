@@ -1,20 +1,16 @@
 import { createServerFn } from '@tanstack/react-start'
 import { decodeCreateCheckoutSession } from './schemas'
+import { Effect } from 'effect'
 
-export const createCheckoutSessionFn = createServerFn({ method: 'POST' })
-  .validator((data: unknown) => {
-    try {
-      return decodeCreateCheckoutSession(data)
-    } catch (error) {
-      console.error('Create checkout session validation failed via @effect/schema:', error)
-      throw new Error(error instanceof Error ? error.message : 'Invalid checkout session payload')
-    }
-  })
-  .handler(async ({ data }) => {
+export const createCheckoutSessionEffect = (data: ReturnType<typeof decodeCreateCheckoutSession>) =>
+  Effect.gen(function* () {
     const stripeKey = typeof process !== 'undefined' ? process.env.STRIPE_SECRET_KEY : null
-    if (stripeKey) {
-      try {
-        // @ts-expect-error - stripe is dynamically imported and not present in package.json dependencies
+    if (!stripeKey) {
+      return { url: null, simulated: true }
+    }
+
+    return yield* Effect.tryPromise({
+      try: async () => {
         const { default: Stripe } = await import('stripe')
         const stripe = new Stripe(stripeKey)
         const session = await stripe.checkout.sessions.create({
@@ -35,11 +31,31 @@ export const createCheckoutSessionFn = createServerFn({ method: 'POST' })
           customer_email: data.email,
         })
         return { url: session.url }
-      } catch (err: unknown) {
-        console.error('Stripe creation failed:', err)
+      },
+      catch: (err) => {
+        console.error('Stripe creation failed via Effect:', err)
         return { error: err instanceof Error ? err.message : 'Stripe initialization error' }
       }
-    }
-    // Sane fallback: simulate secure session creation
-    return { url: null, simulated: true }
+    })
   })
+
+export const createCheckoutSessionFn = createServerFn({ method: 'POST' })
+  .validator((data: unknown) => {
+    try {
+      return decodeCreateCheckoutSession(data)
+    } catch (error) {
+      console.error('Create checkout session validation failed via @effect/schema:', error)
+      throw new Error(error instanceof Error ? error.message : 'Invalid checkout session payload')
+    }
+  })
+  .handler(async ({ data }) => {
+    const program = createCheckoutSessionEffect(data).pipe(
+      Effect.catchAll((err: any) => {
+        const msg = err && typeof err === 'object' && 'message' in err ? err.message : String(err)
+        return Effect.succeed({ error: msg, url: null })
+      })
+    )
+    return Effect.runPromise(program)
+  })
+
+

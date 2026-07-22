@@ -1,4 +1,5 @@
 import * as S from "@effect/schema/Schema";
+import { Either } from "effect";
 
 // Email refinement pattern
 export const EmailSchema = S.String.pipe(
@@ -141,13 +142,22 @@ export const CreateCheckoutSessionSchema = S.Struct({
 });
 
 // ==========================================
-// 7. Decoders & Validators
+// 7. Either-based Decoders & Helper
 // ==========================================
-export const decodeProduct = S.decodeUnknownSync(ProductSchema);
-export const decodeOrder = S.decodeUnknownSync(OrderSchema);
-export const decodeUser = S.decodeUnknownSync(UserSchema);
-export const decodeSession = S.decodeUnknownSync(SessionSchema);
-export const decodeCheckoutPayload = S.decodeUnknownSync(CheckoutPayloadSchema);
-export const decodeImportAliExpressProduct = S.decodeUnknownSync(ImportAliExpressProductSchema);
-export const decodeUpdateSettings = S.decodeUnknownSync(UpdateSettingsSchema);
-export const decodeCreateCheckoutSession = S.decodeUnknownSync(CreateCheckoutSessionSchema);
+export const validateWithSchema = <A, I>(schema: S.Schema<A, I>) => (input: unknown): A => {
+  const result = S.decodeUnknownEither(schema)(input);
+  if (Either.isLeft(result)) {
+    throw new Error(String(result.left));
+  }
+  return result.right;
+};
+
+export const decodeProduct = validateWithSchema(ProductSchema);
+export const decodeOrder = validateWithSchema(OrderSchema);
+export const decodeUser = validateWithSchema(UserSchema);
+export const decodeSession = validateWithSchema(SessionSchema);
+export const decodeCheckoutPayload = validateWithSchema(CheckoutPayloadSchema);
+export const decodeImportAliExpressProduct = validateWithSchema(ImportAliExpressProductSchema);
+export const decodeUpdateSettings = validateWithSchema(UpdateSettingsSchema);
+export const decodeCreateCheckoutSession = validateWithSchema(CreateCheckoutSessionSchema);
+
