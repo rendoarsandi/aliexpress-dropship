@@ -1,12 +1,15 @@
 import { createServerFn } from '@tanstack/react-start'
-import { getRequestHeaders } from '@tanstack/react-start/server'
 import { auth } from './auth'
 import { Effect } from 'effect'
 
 export const getSessionEffect = () =>
   Effect.gen(function* () {
-    const headers = yield* Effect.try({
-      try: () => getRequestHeaders(),
+    const headers = yield* Effect.tryPromise({
+      try: async () => {
+        if (typeof window !== 'undefined') return new Headers()
+        const { getRequestHeaders } = await import('@tanstack/react-start/server')
+        return getRequestHeaders()
+      },
       catch: () => null
     })
 
