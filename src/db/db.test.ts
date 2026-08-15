@@ -19,7 +19,8 @@ import * as schema from './schema'
 import { auth } from '../lib/auth'
 import { importAliExpressProductHandler } from '../lib/scraperSession.server'
 import { getSettingsHandler, updateSettingsHandler, getSettingsEffect, updateSettingsEffect } from '../lib/settingsSession.server'
-import { db } from './index'
+import { settingsRepository } from './repositories/settingsRepository'
+import { productRepository } from './repositories/productRepository'
 import { Effect } from 'effect'
 
 describe('DSTRKT Database Schema & Authentication Integration', () => {
@@ -141,19 +142,9 @@ describe('AliExpress Product Scraper Security Boundaries & Markups', () => {
       }
     }
 
-    // Mock db.select().from().where().get() to return null so it falls back to 1.5 multiplier
-    const selectSpy = vi.spyOn(db, 'select').mockReturnValue({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          get: vi.fn().mockResolvedValue(null)
-        })
-      })
-    } as unknown as ReturnType<typeof db.select>)
-
-    // Mock db.insert().values() to mock successful database insertion
-    const insertSpy = vi.spyOn(db, 'insert').mockReturnValue({
-      values: vi.fn().mockResolvedValue({})
-    } as unknown as ReturnType<typeof db.insert>)
+    // Mock settingsRepository.getSettings to return null so it falls back to 1.5 multiplier
+    const getSettingsSpy = vi.spyOn(settingsRepository, 'getSettings').mockResolvedValue(null)
+    const insertProductSpy = vi.spyOn(productRepository, 'insertProduct').mockResolvedValue(undefined)
 
     const result = await importAliExpressProductHandler(
       { url: 'https://aliexpress.com/item/jacket-cyber.html' },
@@ -171,10 +162,10 @@ describe('AliExpress Product Scraper Security Boundaries & Markups', () => {
       expect.fail('Expected successful import')
     }
 
-    expect(insertSpy).toHaveBeenCalled()
+    expect(insertProductSpy).toHaveBeenCalled()
 
-    selectSpy.mockRestore()
-    insertSpy.mockRestore()
+    getSettingsSpy.mockRestore()
+    insertProductSpy.mockRestore()
   })
 
   test('should successfully import product using custom database markup multiplier setting', async () => {
@@ -200,22 +191,15 @@ describe('AliExpress Product Scraper Security Boundaries & Markups', () => {
       }
     }
 
-    // Mock db.select().from().where().get() to return 2.0 multiplier
-    const selectSpy = vi.spyOn(db, 'select').mockReturnValue({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          get: vi.fn().mockResolvedValue({
-            id: 'markup_multiplier',
-            marginMultiplier: 2.0
-          })
-        })
-      })
-    } as unknown as ReturnType<typeof db.select>)
-
-    // Mock db.insert().values()
-    const insertSpy = vi.spyOn(db, 'insert').mockReturnValue({
-      values: vi.fn().mockResolvedValue({})
-    } as unknown as ReturnType<typeof db.insert>)
+    // Mock settingsRepository.getSettings to return 2.0 multiplier
+    const getSettingsSpy = vi.spyOn(settingsRepository, 'getSettings').mockResolvedValue({
+      id: 'markup_multiplier',
+      markupType: 'multiplier',
+      fixedMarkup: 0.0,
+      marginMultiplier: 2.0,
+      updatedAt: Date.now()
+    })
+    const insertProductSpy = vi.spyOn(productRepository, 'insertProduct').mockResolvedValue(undefined)
 
     const result = await importAliExpressProductHandler(
       { url: 'https://aliexpress.com/item/shoes-tactical.html' },
@@ -232,8 +216,8 @@ describe('AliExpress Product Scraper Security Boundaries & Markups', () => {
       expect.fail('Expected successful import')
     }
 
-    selectSpy.mockRestore()
-    insertSpy.mockRestore()
+    getSettingsSpy.mockRestore()
+    insertProductSpy.mockRestore()
   })
 })
 
@@ -289,42 +273,30 @@ describe('Global Settings Control & DB Synchronization', () => {
   })
 
   test('should retrieve default multiplier settings if not found in db for admin', async () => {
-    const selectSpy = vi.spyOn(db, 'select').mockReturnValue({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          get: vi.fn().mockResolvedValue(null)
-        })
-      })
-    } as unknown as ReturnType<typeof db.select>)
+    const getSettingsSpy = vi.spyOn(settingsRepository, 'getSettings').mockResolvedValue(null)
 
     const result = await getSettingsHandler({ session: mockAdminSession })
     expect(result).toBeDefined()
     expect(result.marginMultiplier).toBe(1.5)
     expect(result.markupType).toBe('multiplier')
 
-    selectSpy.mockRestore()
+    getSettingsSpy.mockRestore()
   })
 
   test('should successfully retrieve existing settings when found in db for admin', async () => {
-    const selectSpy = vi.spyOn(db, 'select').mockReturnValue({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          get: vi.fn().mockResolvedValue({
-            id: 'markup_multiplier',
-            markupType: 'multiplier',
-            fixedMarkup: 0.0,
-            marginMultiplier: 2.5,
-            updatedAt: 12345
-          })
-        })
-      })
-    } as unknown as ReturnType<typeof db.select>)
+    const getSettingsSpy = vi.spyOn(settingsRepository, 'getSettings').mockResolvedValue({
+      id: 'markup_multiplier',
+      markupType: 'multiplier',
+      fixedMarkup: 0.0,
+      marginMultiplier: 2.5,
+      updatedAt: 12345
+    })
 
     const result = await getSettingsHandler({ session: mockAdminSession })
     expect(result).toBeDefined()
     expect(result.marginMultiplier).toBe(2.5)
 
-    selectSpy.mockRestore()
+    getSettingsSpy.mockRestore()
   })
 
   test('should fail to update settings when unauthorized', async () => {
@@ -353,17 +325,8 @@ describe('Global Settings Control & DB Synchronization', () => {
   })
 
   test('should successfully insert settings in database for admin when none exists', async () => {
-    const selectSpy = vi.spyOn(db, 'select').mockReturnValue({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          get: vi.fn().mockResolvedValue(null)
-        })
-      })
-    } as unknown as ReturnType<typeof db.select>)
-
-    const insertSpy = vi.spyOn(db, 'insert').mockReturnValue({
-      values: vi.fn().mockResolvedValue({})
-    } as unknown as ReturnType<typeof db.insert>)
+    const getSettingsSpy = vi.spyOn(settingsRepository, 'getSettings').mockResolvedValue(null)
+    const insertSettingsSpy = vi.spyOn(settingsRepository, 'insertSettings').mockResolvedValue(undefined)
 
     const res = await updateSettingsHandler({ marginMultiplier: 1.85 }, { session: mockAdminSession })
     if ('success' in res) {
@@ -371,29 +334,21 @@ describe('Global Settings Control & DB Synchronization', () => {
     } else {
       expect.fail('Expected success')
     }
-    expect(insertSpy).toHaveBeenCalled()
+    expect(insertSettingsSpy).toHaveBeenCalledWith(1.85)
 
-    selectSpy.mockRestore()
-    insertSpy.mockRestore()
+    getSettingsSpy.mockRestore()
+    insertSettingsSpy.mockRestore()
   })
 
   test('should successfully update settings in database for admin when they exist', async () => {
-    const selectSpy = vi.spyOn(db, 'select').mockReturnValue({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          get: vi.fn().mockResolvedValue({
-            id: 'markup_multiplier',
-            marginMultiplier: 1.5
-          })
-        })
-      })
-    } as unknown as ReturnType<typeof db.select>)
-
-    const updateSpy = vi.spyOn(db, 'update').mockReturnValue({
-      set: vi.fn().mockReturnValue({
-        where: vi.fn().mockResolvedValue({})
-      })
-    } as unknown as ReturnType<typeof db.update>)
+    const getSettingsSpy = vi.spyOn(settingsRepository, 'getSettings').mockResolvedValue({
+      id: 'markup_multiplier',
+      markupType: 'multiplier',
+      fixedMarkup: 0.0,
+      marginMultiplier: 1.5,
+      updatedAt: 1000
+    })
+    const updateSettingsSpy = vi.spyOn(settingsRepository, 'updateSettings').mockResolvedValue(undefined)
 
     const res = await updateSettingsHandler({ marginMultiplier: 2.15 }, { session: mockAdminSession })
     if ('success' in res) {
@@ -401,10 +356,10 @@ describe('Global Settings Control & DB Synchronization', () => {
     } else {
       expect.fail('Expected success')
     }
-    expect(updateSpy).toHaveBeenCalled()
+    expect(updateSettingsSpy).toHaveBeenCalledWith(2.15)
 
-    selectSpy.mockRestore()
-    updateSpy.mockRestore()
+    getSettingsSpy.mockRestore()
+    updateSettingsSpy.mockRestore()
   })
 })
 

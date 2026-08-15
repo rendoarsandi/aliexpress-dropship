@@ -1,8 +1,7 @@
 import { getRequestHeaders } from '@tanstack/react-start/server'
 import * as S from '@effect/schema/Schema'
-import { db } from '../db'
-import { products, settings } from '../db/schema'
-import { eq } from 'drizzle-orm'
+import { settingsRepository } from '../db/repositories/settingsRepository'
+import { productRepository } from '../db/repositories/productRepository'
 import { auth } from './auth'
 import { Effect } from 'effect'
 import type { AuthSession } from './settingsSession.server'
@@ -189,28 +188,14 @@ export const importAliExpressProductEffect = (
       catch: (err) => new ValidationError(`VALIDATION FAILURE: ${err instanceof Error ? err.message : 'Scraped product data did not meet schema constraints'}`)
     })
 
-    // Retrieve markup multiplier from settings table
+    // Retrieve markup multiplier from settings repository
     let baseMultiplier = 1.5
-    const settingRow = yield* Effect.tryPromise<typeof settings.$inferSelect | null, null>({
-      try: async () => {
-        const res = await db.select().from(settings).where(eq(settings.id, 'markup_multiplier')).get()
-        return (res as typeof settings.$inferSelect) || null
-      },
+    const settingRow = yield* Effect.tryPromise({
+      try: () => settingsRepository.getSettings(),
       catch: () => null
     })
     if (settingRow && typeof settingRow.marginMultiplier === 'number') {
       baseMultiplier = settingRow.marginMultiplier
-    } else {
-      const altRow = yield* Effect.tryPromise<typeof settings.$inferSelect | null, null>({
-        try: async () => {
-          const res = await db.select().from(settings).where(eq(settings.id, 'markup')).get()
-          return (res as typeof settings.$inferSelect) || null
-        },
-        catch: () => null
-      })
-      if (altRow && typeof altRow.marginMultiplier === 'number') {
-        baseMultiplier = altRow.marginMultiplier
-      }
     }
 
     // Apply Tiered Pricing Strategy:
@@ -229,9 +214,9 @@ export const importAliExpressProductEffect = (
       ? crypto.randomUUID()
       : `ali-${Math.random().toString(36).substring(2, 15)}`
 
-    // Insert validated and marked up product into SQLite products table
+    // Insert validated and marked up product into SQLite products table via productRepository
     yield* Effect.tryPromise({
-      try: () => db.insert(products).values({
+      try: () => productRepository.insertProduct({
         id: productId,
         title: validated.title,
         description: 'Imported from AliExpress and secured via Auditor session policies.',

@@ -1,7 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { db } from '../../../db'
-import { orders } from '../../../db/schema'
-import { eq } from 'drizzle-orm'
+import { orderRepository } from '../../../db/repositories/orderRepository'
 import Stripe from 'stripe'
 import { Effect } from 'effect'
 
@@ -53,7 +51,7 @@ export const stripeWebhookEffect = (request: Request) =>
 
       if (orderId) {
         yield* Effect.tryPromise({
-          try: () => db.update(orders).set({ status: 'paid' }).where(eq(orders.id, orderId)),
+          try: () => orderRepository.markOrderPaid(orderId),
           catch: (dbErr) => {
             console.error(`Failed to update order ${orderId} in database:`, dbErr)
             return new DatabaseError()

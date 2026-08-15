@@ -1,9 +1,10 @@
 import { getRequestHeaders } from '@tanstack/react-start/server'
-import { db } from '../db'
-import { settings } from '../db/schema'
-import { eq } from 'drizzle-orm'
+import { settingsRepository } from '../db/repositories/settingsRepository'
+import type { SettingRecord } from '../db/repositories/settingsRepository'
 import { auth } from './auth'
 import { Effect } from 'effect'
+
+export type { SettingRecord }
 
 // ==========================================
 // Custom Domain Errors
@@ -70,23 +71,12 @@ const requireAdmin = (context?: { session?: AuthSession | null | unknown }) =>
     return session
   })
 
-export interface SettingRecord {
-  id: string
-  markupType: string
-  fixedMarkup: number
-  marginMultiplier: number
-  updatedAt: number
-}
-
 export const getSettingsEffect = (context?: { session?: AuthSession | null | unknown }) =>
   Effect.gen(function* () {
     yield* requireAdmin(context)
 
     const row = yield* Effect.tryPromise<SettingRecord | null, DatabaseError>({
-      try: async () => {
-        const res = await db.select().from(settings).where(eq(settings.id, 'markup_multiplier')).get()
-        return (res as SettingRecord) || null
-      },
+      try: () => settingsRepository.getSettings(),
       catch: (err: unknown) => new DatabaseError(err instanceof Error ? err.message : 'Failed to select from DB')
     })
 
@@ -130,32 +120,18 @@ export const updateSettingsEffect = (
     }
 
     const existing = yield* Effect.tryPromise<SettingRecord | null, DatabaseError>({
-      try: async () => {
-        const res = await db.select().from(settings).where(eq(settings.id, 'markup_multiplier')).get()
-        return (res as SettingRecord) || null
-      },
+      try: () => settingsRepository.getSettings(),
       catch: (err: unknown) => new DatabaseError(err instanceof Error ? err.message : 'Database select error')
     })
 
     if (existing) {
       yield* Effect.tryPromise({
-        try: () => db.update(settings)
-          .set({
-            marginMultiplier: data.marginMultiplier,
-            updatedAt: Date.now()
-          })
-          .where(eq(settings.id, 'markup_multiplier')),
+        try: () => settingsRepository.updateSettings(data.marginMultiplier),
         catch: (err: unknown) => new DatabaseError(err instanceof Error ? err.message : 'Database update error')
       })
     } else {
       yield* Effect.tryPromise({
-        try: () => db.insert(settings).values({
-          id: 'markup_multiplier',
-          markupType: 'multiplier',
-          fixedMarkup: 0.0,
-          marginMultiplier: data.marginMultiplier,
-          updatedAt: Date.now()
-        }),
+        try: () => settingsRepository.insertSettings(data.marginMultiplier),
         catch: (err: unknown) => new DatabaseError(err instanceof Error ? err.message : 'Database insert error')
       })
     }

@@ -29,7 +29,7 @@ const productImages: Record<string, string> = {
 // Fallback high-aesthetic abstract technical image
 const fallbackImage = 'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?q=80&w=800&auto=format&fit=crop'
 
-function StorefrontLanding() {
+export function StorefrontLanding() {
   const searchQuery = useStore(dashboardStore, (s) => s.searchQuery)
   const selectedCategory = useStore(dashboardStore, (s) => s.selectedCategory)
   const stockFilter = useStore(dashboardStore, (s) => s.stockFilter)

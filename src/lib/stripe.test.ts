@@ -180,7 +180,7 @@ describe('Stripe Checkout Session Server Functions', () => {
         ok: true,
         json: async () => mockResponse
       })
-      globalThis.fetch = fetchSpy
+      vi.stubGlobal('fetch', fetchSpy)
 
       const result = await createStripeCheckoutSessionFn({ data: validPayload })
 
@@ -214,7 +214,7 @@ describe('Stripe Checkout Session Server Functions', () => {
         ok: false,
         text: async () => 'Stripe account is restricted'
       })
-      globalThis.fetch = fetchSpy
+      vi.stubGlobal('fetch', fetchSpy)
 
       const result = await createStripeCheckoutSessionFn({ data: validPayload })
 

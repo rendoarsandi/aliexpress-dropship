@@ -15,7 +15,7 @@ vi.mock('better-sqlite3', () => {
   }
 })
 
-import { db } from '../../../db'
+import { orderRepository } from '../../../db/repositories/orderRepository'
 import { Route } from './stripe'
 
 type HttpHandler = (ctx: { request: Request }) => Promise<Response>
@@ -53,23 +53,14 @@ vi.mock('stripe', () => {
 })
 
 describe('Stripe Webhook Endpoint Route Handler', () => {
-  let updateSpy: MockInstance | undefined
-  let setSpy: ReturnType<typeof vi.fn>
-  let whereSpy: ReturnType<typeof vi.fn>
+  let markOrderPaidSpy: MockInstance
 
   beforeEach(() => {
-    // Spy on the DB update operations
-    whereSpy = vi.fn().mockResolvedValue({})
-    setSpy = vi.fn().mockReturnValue({
-      where: whereSpy
-    })
-    updateSpy = vi.spyOn(db, 'update').mockReturnValue({
-      set: setSpy,
-    } as unknown as ReturnType<typeof db.update>)
+    markOrderPaidSpy = vi.spyOn(orderRepository, 'markOrderPaid').mockResolvedValue(undefined)
   })
 
   afterEach(() => {
-    updateSpy?.mockRestore()
+    markOrderPaidSpy.mockRestore()
   })
 
   test('should verify the endpoint parses and handles checkout.session.completed event and updates DB', async () => {
@@ -101,10 +92,8 @@ describe('Stripe Webhook Endpoint Route Handler', () => {
       const json = await response.json()
       expect(json).toEqual({ received: true })
 
-      // Verify DB update was triggered
-      expect(updateSpy).toHaveBeenCalled()
-      expect(setSpy).toHaveBeenCalledWith({ status: 'paid' })
-      expect(whereSpy).toHaveBeenCalled()
+      // Verify DB update was triggered with correct order ID
+      expect(markOrderPaidSpy).toHaveBeenCalledWith('DSTRKT-ORD-TEST123')
     }
   })
 

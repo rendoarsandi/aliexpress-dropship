@@ -1,6 +1,6 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import type { ReactNode, AnchorHTMLAttributes, ComponentType } from 'react'
+import type { ReactNode, AnchorHTMLAttributes } from 'react'
 
 interface LinkMockProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
   children?: ReactNode
@@ -60,18 +60,15 @@ vi.mock('lucide-react', () => ({
   ArrowDown: () => <div data-testid="arrow-down-icon" />
 }))
 
-import { Route } from './index'
+import { StorefrontLanding } from './index'
 
 describe('StorefrontLanding Component Tests', () => {
-  const routeOptions = Route.options as unknown as { component: ComponentType }
-  const StorefrontLandingComponent = routeOptions.component
-
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
   test('renders storefront landing successfully with main title and core structures', () => {
-    render(<StorefrontLandingComponent />)
+    render(<StorefrontLanding />)
 
     // Verify main brand heading "STITCH" and sub-heading "DSTRKT"
     expect(screen.getByText('STITCH')).toBeDefined()
@@ -87,7 +84,7 @@ describe('StorefrontLanding Component Tests', () => {
   })
 
   test('verifies that cyber-gamer clichés, glowing text, and scanning line overlays are removed', () => {
-    const { container } = render(<StorefrontLandingComponent />)
+    const { container } = render(<StorefrontLanding />)
 
     // No scanning line overlay (shadow or bounce bounce)
     const scanningOverlay = container.querySelector('.shadow-\\[0_0_15px_rgba\\(255\\,255\\,255\\,0\\.5\\)\\]')
@@ -106,7 +103,7 @@ describe('StorefrontLanding Component Tests', () => {
   })
 
   test('verifies marquee scrolling animation is removed and replaced by static streams', () => {
-    const { container } = render(<StorefrontLandingComponent />)
+    const { container } = render(<StorefrontLanding />)
     const marqueeAnimation = container.querySelector('.animate-marquee')
     expect(marqueeAnimation).toBeNull()
 
@@ -115,7 +112,7 @@ describe('StorefrontLanding Component Tests', () => {
   })
 
   test('verifies size select buttons are scaled to 44x44px mobile touch targets (w-11 h-11)', () => {
-    render(<StorefrontLandingComponent />)
+    render(<StorefrontLanding />)
 
     // Get size selection buttons for M-06 Cybernetic Cargo Pants (sizes: 30, 32, 34)
     const sizeButtons = screen.getAllByRole('button', { name: /^(30|32|34|S|M|L)$/ })
@@ -129,7 +126,7 @@ describe('StorefrontLanding Component Tests', () => {
   })
 
   test('opens technical Sizing Spec modal and verifies measurement chart definitions', () => {
-    render(<StorefrontLandingComponent />)
+    render(<StorefrontLanding />)
 
     // Locate the "VIEW SIZING SPEC CHART" button and click it
     const viewChartButton = screen.getByText('VIEW SIZING SPEC CHART')
@@ -155,7 +152,7 @@ describe('StorefrontLanding Component Tests', () => {
   })
 
   test('contains user-friendly label translations for non-tech users', () => {
-    render(<StorefrontLandingComponent />)
+    render(<StorefrontLanding />)
 
     // Labels changed from hardware spec to SELECT SPEC / SIZE:
     const specLabels = screen.getAllByText('SELECT SPEC / SIZE:')
