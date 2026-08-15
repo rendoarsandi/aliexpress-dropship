@@ -198,7 +198,7 @@ function Dashboard() {
   const [settingsSuccess, setSettingsSuccess] = useState<string | null>(null)
   const [settingsError, setSettingsError] = useState<string | null>(null)
 
-  const currentMultiplier = globalSettings?.marginMultiplier ?? 1.5
+  const currentMultiplier = (globalSettings as any)?.marginMultiplier ?? 1.5
 
   const handleUpdateSettings = async (e: React.FormEvent) => {
     e.preventDefault()

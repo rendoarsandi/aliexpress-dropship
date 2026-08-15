@@ -190,18 +190,24 @@ export const importAliExpressProductEffect = (
 
     // Retrieve markup multiplier from settings table
     let baseMultiplier = 1.5
-    const settingRow = yield* Effect.tryPromise({
-      try: () => db.select().from(settings).where(eq(settings.id, 'markup_multiplier')).get(),
+    const settingRow = yield* Effect.tryPromise<typeof settings.$inferSelect | null, null>({
+      try: async () => {
+        const res = await db.select().from(settings).where(eq(settings.id, 'markup_multiplier')).get()
+        return (res as typeof settings.$inferSelect) || null
+      },
       catch: () => null
     })
-    if (settingRow) {
+    if (settingRow && typeof settingRow.marginMultiplier === 'number') {
       baseMultiplier = settingRow.marginMultiplier
     } else {
-      const altRow = yield* Effect.tryPromise({
-        try: () => db.select().from(settings).where(eq(settings.id, 'markup')).get(),
+      const altRow = yield* Effect.tryPromise<typeof settings.$inferSelect | null, null>({
+        try: async () => {
+          const res = await db.select().from(settings).where(eq(settings.id, 'markup')).get()
+          return (res as typeof settings.$inferSelect) || null
+        },
         catch: () => null
       })
-      if (altRow) {
+      if (altRow && typeof altRow.marginMultiplier === 'number') {
         baseMultiplier = altRow.marginMultiplier
       }
     }

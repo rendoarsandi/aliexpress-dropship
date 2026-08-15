@@ -11,7 +11,7 @@ This file maintains critical architecture, stack decisions, environment requirem
 - **Language & Runtime:** TypeScript, React (v19)
 - **Build Tool:** Vite (v8)
 - **Deployment & Hosting Target:** Cloudflare Pages / Workers
-- **Package Manager:** `npm` (lockfile: `package-lock.json`)
+- **Package Manager:** `bun` (lockfile: `bun.lock`)
 - **Linting & Code Quality:** ESLint (flat config: `eslint.config.js`)
 - **Styling:** Vanilla CSS + Tailwind CSS v4
 

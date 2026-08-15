@@ -72,7 +72,7 @@ function getInitialCartState(): CartState {
   try {
     const stored = window.localStorage.getItem('dstrkt_cart')
     return stored ? JSON.parse(stored) : { items: [] }
-  } catch (e) {
+  } catch {
     return { items: [] }
   }
 }
@@ -83,7 +83,7 @@ function saveCartState(state: CartState) {
   if (isBrowser) {
     try {
       window.localStorage.setItem('dstrkt_cart', JSON.stringify(state))
-    } catch (e) {
+    } catch {
       // ignore
     }
   }
@@ -209,7 +209,7 @@ function getInitialOrdersState(): OrdersState {
   try {
     const stored = window.localStorage.getItem('dstrkt_orders')
     return stored ? JSON.parse(stored) : { orders: mockOrders }
-  } catch (e) {
+  } catch {
     return { orders: mockOrders }
   }
 }
@@ -220,7 +220,7 @@ function saveOrdersState(state: OrdersState) {
   if (isBrowser) {
     try {
       window.localStorage.setItem('dstrkt_orders', JSON.stringify(state))
-    } catch (e) {
+    } catch {
       // ignore
     }
   }

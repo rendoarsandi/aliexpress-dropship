@@ -303,22 +303,22 @@ describe('Global Settings Control & DB Synchronization', () => {
 
     const result = await getSettingsHandler({ session: mockAdminSession })
     expect(result).toBeDefined()
-    expect(result.marginMultiplier).toBe(2.5)
+    expect((result as any).marginMultiplier).toBe(2.5)
 
     selectSpy.mockRestore()
   })
 
   test('should fail to update settings when unauthorized', async () => {
     const res1 = await updateSettingsHandler({ marginMultiplier: 1.8 }, { session: null })
-    expect(res1.error).toContain('UNAUTHORIZED')
+    expect((res1 as any).error).toContain('UNAUTHORIZED')
 
     const res2 = await updateSettingsHandler({ marginMultiplier: 1.8 }, { session: mockNonAdminSession })
-    expect(res2.error).toContain('UNAUTHORIZED')
+    expect((res2 as any).error).toContain('UNAUTHORIZED')
   })
 
   test('should reject negative multipliers during update', async () => {
     const res = await updateSettingsHandler({ marginMultiplier: -1.0 }, { session: mockAdminSession })
-    expect(res.error).toContain('INVALID_VALUE')
+    expect((res as any).error).toContain('INVALID_VALUE')
   })
 
   test('should successfully insert settings in database for admin when none exists', async () => {
@@ -335,7 +335,7 @@ describe('Global Settings Control & DB Synchronization', () => {
     } as any)
 
     const res = await updateSettingsHandler({ marginMultiplier: 1.85 }, { session: mockAdminSession })
-    expect(res.success).toBe(true)
+    expect((res as any).success).toBe(true)
     expect(insertSpy).toHaveBeenCalled()
 
     selectSpy.mockRestore()
@@ -361,7 +361,7 @@ describe('Global Settings Control & DB Synchronization', () => {
     } as any)
 
     const res = await updateSettingsHandler({ marginMultiplier: 2.15 }, { session: mockAdminSession })
-    expect(res.success).toBe(true)
+    expect((res as any).success).toBe(true)
     expect(updateSpy).toHaveBeenCalled()
 
     selectSpy.mockRestore()

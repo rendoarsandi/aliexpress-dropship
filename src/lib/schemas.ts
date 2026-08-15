@@ -1,4 +1,5 @@
 import * as S from "@effect/schema/Schema";
+import { TreeFormatter } from "@effect/schema";
 import { Either } from "effect";
 
 // Email refinement pattern
@@ -147,7 +148,10 @@ export const CreateCheckoutSessionSchema = S.Struct({
 export const validateWithSchema = <A, I>(schema: S.Schema<A, I>) => (input: unknown): A => {
   const result = S.decodeUnknownEither(schema)(input);
   if (Either.isLeft(result)) {
-    throw new Error(String(result.left));
+    const formatted = typeof TreeFormatter !== 'undefined' && 'formatIssueSync' in TreeFormatter
+      ? (TreeFormatter as any).formatIssueSync(result.left.issue)
+      : String(result.left);
+    throw new Error(String(formatted));
   }
   return result.right;
 };

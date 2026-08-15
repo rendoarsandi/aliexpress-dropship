@@ -60,7 +60,7 @@ describe('Stripe Webhook Endpoint Route Handler', () => {
   })
 
   afterEach(() => {
-    updateSpy.mockRestore()
+    updateSpy?.mockRestore()
   })
 
   test('should verify the endpoint parses and handles checkout.session.completed event and updates DB', async () => {
@@ -82,7 +82,7 @@ describe('Stripe Webhook Endpoint Route Handler', () => {
     })
 
     // Get POST handler
-    const postHandler = Route.options.server?.handlers?.POST
+    const postHandler = (Route.options.server?.handlers as any)?.POST
     expect(postHandler).toBeDefined()
 
     if (postHandler) {
@@ -117,7 +117,7 @@ describe('Stripe Webhook Endpoint Route Handler', () => {
       body: JSON.stringify({ id: 'evt_test_123' })
     })
 
-    const postHandler = Route.options.server?.handlers?.POST
+    const postHandler = (Route.options.server?.handlers as any)?.POST
     expect(postHandler).toBeDefined()
 
     if (postHandler) {

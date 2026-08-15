@@ -56,10 +56,10 @@ function Checkout() {
               origin
             }
           })
-          if (stripeRes && stripeRes.url) {
+          if (stripeRes && 'url' in stripeRes && stripeRes.url) {
             window.location.href = stripeRes.url
             return
-          } else if (stripeRes && stripeRes.error) {
+          } else if (stripeRes && 'error' in stripeRes && stripeRes.error) {
             alert(`Stripe Session Creation Error: ${stripeRes.error}`)
             setIsSubmitting(false)
             return

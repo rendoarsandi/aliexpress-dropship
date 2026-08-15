@@ -21,7 +21,7 @@ function getInitialAuthState(): AuthState {
   try {
     const stored = window.localStorage.getItem('dstrkt_session')
     return stored ? { user: JSON.parse(stored), error: null, isLoading: false } : { user: null, error: null, isLoading: false }
-  } catch (e) {
+  } catch {
     return { user: null, error: null, isLoading: false }
   }
 }
@@ -36,7 +36,7 @@ function saveSession(user: UserSession | null) {
       } else {
         window.localStorage.removeItem('dstrkt_session')
       }
-    } catch (e) {
+    } catch {
       // ignore
     }
   }
@@ -56,7 +56,7 @@ function getRegisteredUsers(): Record<string, { email: string; fullName: string;
         joinedAt: '2026-01-01'
       }
     }
-  } catch (e) {
+  } catch {
     return {}
   }
 }
@@ -65,7 +65,7 @@ function saveRegisteredUsers(users: ReturnType<typeof getRegisteredUsers>) {
   if (isBrowser) {
     try {
       window.localStorage.setItem('dstrkt_registered_users', JSON.stringify(users))
-    } catch (e) {
+    } catch {
       // ignore
     }
   }

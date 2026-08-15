@@ -44,7 +44,10 @@ const getSession = (context?: { session?: unknown }) =>
 const requireAdmin = (context?: { session?: unknown }) =>
   Effect.gen(function* () {
     const session = yield* getSession(context)
-    const adminEmails = (process.env.ADMIN_EMAILS || 'admin@dstrkt.com').toLowerCase().split(',').map(e => e.trim())
+    const adminEmails = (typeof process !== 'undefined' && process.env.ADMIN_EMAILS ? process.env.ADMIN_EMAILS : 'admin@dstrkt.com')
+      .toLowerCase()
+      .split(',')
+      .map(e => e.trim())
     const userEmail = session?.user?.email?.toLowerCase()
     const isAdmin = session?.user?.role === 'admin' || (userEmail && adminEmails.includes(userEmail))
     if (!session || !session.user || !isAdmin) {
@@ -53,13 +56,24 @@ const requireAdmin = (context?: { session?: unknown }) =>
     return session
   })
 
+export interface SettingRecord {
+  id: string
+  markupType: string
+  fixedMarkup: number
+  marginMultiplier: number
+  updatedAt: number
+}
+
 export const getSettingsEffect = (context?: { session?: unknown }) =>
   Effect.gen(function* () {
     yield* requireAdmin(context)
 
-    const row = yield* Effect.tryPromise({
-      try: () => db.select().from(settings).where(eq(settings.id, 'markup_multiplier')).get(),
-      catch: (err: any) => new DatabaseError(err.message || 'Failed to select from DB')
+    const row = yield* Effect.tryPromise<SettingRecord | null, DatabaseError>({
+      try: async () => {
+        const res = await db.select().from(settings).where(eq(settings.id, 'markup_multiplier')).get()
+        return (res as SettingRecord) || null
+      },
+      catch: (err: any) => new DatabaseError(err?.message || 'Failed to select from DB')
     })
 
     if (row) {
@@ -74,8 +88,8 @@ export const getSettingsEffect = (context?: { session?: unknown }) =>
       updatedAt: Date.now()
     }
   }).pipe(
-    Effect.catchAll((err) => {
-      if (err._tag === 'UnauthorizedError') {
+    Effect.catchAll((err: any) => {
+      if (err && err._tag === 'UnauthorizedError') {
         return Effect.fail(err)
       }
       // Log DB error and fallback to default row
@@ -101,9 +115,12 @@ export const updateSettingsEffect = (
       return yield* Effect.fail(new InvalidValueError('INVALID_VALUE: MULTIPLIER CANNOT BE NEGATIVE'))
     }
 
-    const existing = yield* Effect.tryPromise({
-      try: () => db.select().from(settings).where(eq(settings.id, 'markup_multiplier')).get(),
-      catch: (err: any) => new DatabaseError(err.message || 'Database select error')
+    const existing = yield* Effect.tryPromise<SettingRecord | null, DatabaseError>({
+      try: async () => {
+        const res = await db.select().from(settings).where(eq(settings.id, 'markup_multiplier')).get()
+        return (res as SettingRecord) || null
+      },
+      catch: (err: any) => new DatabaseError(err?.message || 'Database select error')
     })
 
     if (existing) {
@@ -114,7 +131,7 @@ export const updateSettingsEffect = (
             updatedAt: Date.now()
           })
           .where(eq(settings.id, 'markup_multiplier')),
-        catch: (err: any) => new DatabaseError(err.message || 'Database update error')
+        catch: (err: any) => new DatabaseError(err?.message || 'Database update error')
       })
     } else {
       yield* Effect.tryPromise({
@@ -125,7 +142,7 @@ export const updateSettingsEffect = (
           marginMultiplier: data.marginMultiplier,
           updatedAt: Date.now()
         }),
-        catch: (err: any) => new DatabaseError(err.message || 'Database insert error')
+        catch: (err: any) => new DatabaseError(err?.message || 'Database insert error')
       })
     }
 
@@ -136,7 +153,7 @@ export const updateSettingsEffect = (
 // Handlers (Adapters for TanStack Start / Tests)
 // ==========================================
 
-export async function getSettingsHandler(context?: { session?: unknown }) {
+export async function getSettingsHandler(context?: { session?: unknown }): Promise<SettingRecord> {
   try {
     return await Effect.runPromise(getSettingsEffect(context))
   } catch (err: any) {
@@ -152,15 +169,15 @@ export async function updateSettingsHandler(
   context?: { session?: unknown }
 ) {
   const program = updateSettingsEffect(data, context).pipe(
-    Effect.catchAll((err) => {
-      if (err._tag === 'UnauthorizedError') {
+    Effect.catchAll((err: any) => {
+      if (err && err._tag === 'UnauthorizedError') {
         return Effect.succeed({ error: err.message })
       }
-      if (err._tag === 'InvalidValueError') {
+      if (err && err._tag === 'InvalidValueError') {
         return Effect.succeed({ error: err.message })
       }
       console.error('Failed to update settings:', err)
-      return Effect.succeed({ error: `DATABASE ERROR: ${err.message}` })
+      return Effect.succeed({ error: `DATABASE ERROR: ${err?.message || String(err)}` })
     })
   )
   return Effect.runPromise(program)
