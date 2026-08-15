@@ -5,7 +5,15 @@ import reactHooksPlugin from 'eslint-plugin-react-hooks';
 
 export default tseslint.config(
   {
-    ignores: ['dist/**', 'node_modules/**', '.output/**', '.tanstack/**', 'src/routeTree.gen.ts']
+    ignores: [
+      'dist/**',
+      'node_modules/**',
+      '.output/**',
+      '.tanstack/**',
+      '.impeccable/**',
+      'src/routeTree.gen.ts',
+      'tools/**'
+    ]
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
