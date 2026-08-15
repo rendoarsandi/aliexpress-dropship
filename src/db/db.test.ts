@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, test, expect, vi } from 'vitest'
 
 // Mock better-sqlite3 to bypass native compilation binding limitations on Termux
 vi.mock('better-sqlite3', () => {
-  const DatabaseMock = function (this: any) {
+  const DatabaseMock = function (this: Record<string, unknown>) {
     this.exec = vi.fn()
     this.prepare = vi.fn().mockReturnValue({
       get: vi.fn(),
@@ -68,7 +67,11 @@ describe('AliExpress Product Scraper Security Boundaries & Markups', () => {
     )
 
     expect(result).toBeDefined()
-    expect(result.error).toContain('UNAUTHORIZED')
+    if ('error' in result) {
+      expect(result.error).toContain('UNAUTHORIZED')
+    } else {
+      expect.fail('Expected unauthorized error')
+    }
   })
 
   test('should reject invalid AliExpress product URL scheme', async () => {
@@ -98,13 +101,21 @@ describe('AliExpress Product Scraper Security Boundaries & Markups', () => {
       { url: 'ftp://aliexpress.com/item/123.html' },
       { session: mockSession }
     )
-    expect(result.error).toContain('INVALID SCHEME')
+    if ('error' in result) {
+      expect(result.error).toContain('INVALID SCHEME')
+    } else {
+      expect.fail('Expected invalid scheme error')
+    }
 
     const nonAliExpress = await importAliExpressProductHandler(
       { url: 'https://amazon.com/item/123.html' },
       { session: mockSession }
     )
-    expect(nonAliExpress.error).toContain('UNRECOGNIZED BLOCKCHAIN ADAPTER')
+    if ('error' in nonAliExpress) {
+      expect(nonAliExpress.error).toContain('UNRECOGNIZED BLOCKCHAIN ADAPTER')
+    } else {
+      expect.fail('Expected unrecognized adapter error')
+    }
   })
 
   test('should successfully import product with session, apply settings markup fallback, validate and insert', async () => {
@@ -137,24 +148,28 @@ describe('AliExpress Product Scraper Security Boundaries & Markups', () => {
           get: vi.fn().mockResolvedValue(null)
         })
       })
-    } as any)
+    } as unknown as ReturnType<typeof db.select>)
 
     // Mock db.insert().values() to mock successful database insertion
     const insertSpy = vi.spyOn(db, 'insert').mockReturnValue({
-      values: vi.fn().mockResolvedValue({} as any)
-    } as any)
+      values: vi.fn().mockResolvedValue({})
+    } as unknown as ReturnType<typeof db.insert>)
 
     const result = await importAliExpressProductHandler(
       { url: 'https://aliexpress.com/item/jacket-cyber.html' },
       { session: mockSession }
     )
 
-    expect(result.success).toBe(true)
-    expect(result.productId).toBeDefined()
-    expect(result.product?.title).toBe('AliExpress Stealth Cybertech Jacket')
-    // 120 (raw) * 1.5 (default markup) = 180
-    expect(result.product?.finalPrice).toBe(180)
-    expect(result.product?.multiplier).toBe(1.5)
+    if ('success' in result) {
+      expect(result.success).toBe(true)
+      expect(result.productId).toBeDefined()
+      expect(result.product?.title).toBe('AliExpress Stealth Cybertech Jacket')
+      // 120 (raw) * 1.5 (default markup) = 180
+      expect(result.product?.finalPrice).toBe(180)
+      expect(result.product?.multiplier).toBe(1.5)
+    } else {
+      expect.fail('Expected successful import')
+    }
 
     expect(insertSpy).toHaveBeenCalled()
 
@@ -195,23 +210,27 @@ describe('AliExpress Product Scraper Security Boundaries & Markups', () => {
           })
         })
       })
-    } as any)
+    } as unknown as ReturnType<typeof db.select>)
 
     // Mock db.insert().values()
     const insertSpy = vi.spyOn(db, 'insert').mockReturnValue({
-      values: vi.fn().mockResolvedValue({} as any)
-    } as any)
+      values: vi.fn().mockResolvedValue({})
+    } as unknown as ReturnType<typeof db.insert>)
 
     const result = await importAliExpressProductHandler(
       { url: 'https://aliexpress.com/item/shoes-tactical.html' },
       { session: mockSession }
     )
 
-    expect(result.success).toBe(true)
-    expect(result.product?.title).toBe('AliExpress S-05 Matrix Boots')
-    // 150 (raw) * 2.0 (custom markup) = 300
-    expect(result.product?.finalPrice).toBe(300)
-    expect(result.product?.multiplier).toBe(2.0)
+    if ('success' in result) {
+      expect(result.success).toBe(true)
+      expect(result.product?.title).toBe('AliExpress S-05 Matrix Boots')
+      // 150 (raw) * 2.0 (custom markup) = 300
+      expect(result.product?.finalPrice).toBe(300)
+      expect(result.product?.multiplier).toBe(2.0)
+    } else {
+      expect.fail('Expected successful import')
+    }
 
     selectSpy.mockRestore()
     insertSpy.mockRestore()
@@ -276,7 +295,7 @@ describe('Global Settings Control & DB Synchronization', () => {
           get: vi.fn().mockResolvedValue(null)
         })
       })
-    } as any)
+    } as unknown as ReturnType<typeof db.select>)
 
     const result = await getSettingsHandler({ session: mockAdminSession })
     expect(result).toBeDefined()
@@ -299,26 +318,38 @@ describe('Global Settings Control & DB Synchronization', () => {
           })
         })
       })
-    } as any)
+    } as unknown as ReturnType<typeof db.select>)
 
     const result = await getSettingsHandler({ session: mockAdminSession })
     expect(result).toBeDefined()
-    expect((result as any).marginMultiplier).toBe(2.5)
+    expect(result.marginMultiplier).toBe(2.5)
 
     selectSpy.mockRestore()
   })
 
   test('should fail to update settings when unauthorized', async () => {
     const res1 = await updateSettingsHandler({ marginMultiplier: 1.8 }, { session: null })
-    expect((res1 as any).error).toContain('UNAUTHORIZED')
+    if ('error' in res1) {
+      expect(res1.error).toContain('UNAUTHORIZED')
+    } else {
+      expect.fail('Expected unauthorized error')
+    }
 
     const res2 = await updateSettingsHandler({ marginMultiplier: 1.8 }, { session: mockNonAdminSession })
-    expect((res2 as any).error).toContain('UNAUTHORIZED')
+    if ('error' in res2) {
+      expect(res2.error).toContain('UNAUTHORIZED')
+    } else {
+      expect.fail('Expected unauthorized error')
+    }
   })
 
   test('should reject negative multipliers during update', async () => {
     const res = await updateSettingsHandler({ marginMultiplier: -1.0 }, { session: mockAdminSession })
-    expect((res as any).error).toContain('INVALID_VALUE')
+    if ('error' in res) {
+      expect(res.error).toContain('INVALID_VALUE')
+    } else {
+      expect.fail('Expected invalid value error')
+    }
   })
 
   test('should successfully insert settings in database for admin when none exists', async () => {
@@ -328,14 +359,18 @@ describe('Global Settings Control & DB Synchronization', () => {
           get: vi.fn().mockResolvedValue(null)
         })
       })
-    } as any)
+    } as unknown as ReturnType<typeof db.select>)
 
     const insertSpy = vi.spyOn(db, 'insert').mockReturnValue({
-      values: vi.fn().mockResolvedValue({} as any)
-    } as any)
+      values: vi.fn().mockResolvedValue({})
+    } as unknown as ReturnType<typeof db.insert>)
 
     const res = await updateSettingsHandler({ marginMultiplier: 1.85 }, { session: mockAdminSession })
-    expect((res as any).success).toBe(true)
+    if ('success' in res) {
+      expect(res.success).toBe(true)
+    } else {
+      expect.fail('Expected success')
+    }
     expect(insertSpy).toHaveBeenCalled()
 
     selectSpy.mockRestore()
@@ -352,16 +387,20 @@ describe('Global Settings Control & DB Synchronization', () => {
           })
         })
       })
-    } as any)
+    } as unknown as ReturnType<typeof db.select>)
 
     const updateSpy = vi.spyOn(db, 'update').mockReturnValue({
       set: vi.fn().mockReturnValue({
-        where: vi.fn().mockResolvedValue({} as any)
+        where: vi.fn().mockResolvedValue({})
       })
-    } as any)
+    } as unknown as ReturnType<typeof db.update>)
 
     const res = await updateSettingsHandler({ marginMultiplier: 2.15 }, { session: mockAdminSession })
-    expect((res as any).success).toBe(true)
+    if ('success' in res) {
+      expect(res.success).toBe(true)
+    } else {
+      expect.fail('Expected success')
+    }
     expect(updateSpy).toHaveBeenCalled()
 
     selectSpy.mockRestore()
@@ -420,8 +459,9 @@ describe('Effect-TS Pure Functional Pipelines', () => {
     if (result._tag === 'Failure') {
       const cause = result.cause
       expect(cause._tag).toBe('Fail')
-      // @ts-expect-error - cause.error is present in Fail cause
-      expect(cause.error._tag).toBe('UnauthorizedError')
+      if ('error' in cause && typeof cause.error === 'object' && cause.error !== null && '_tag' in cause.error) {
+        expect((cause.error as { _tag: string })._tag).toBe('UnauthorizedError')
+      }
     }
   })
 
@@ -431,8 +471,9 @@ describe('Effect-TS Pure Functional Pipelines', () => {
     if (result._tag === 'Failure') {
       const cause = result.cause
       expect(cause._tag).toBe('Fail')
-      // @ts-expect-error - cause.error is present in Fail cause
-      expect(cause.error._tag).toBe('InvalidValueError')
+      if ('error' in cause && typeof cause.error === 'object' && cause.error !== null && '_tag' in cause.error) {
+        expect((cause.error as { _tag: string })._tag).toBe('InvalidValueError')
+      }
     }
   })
 })

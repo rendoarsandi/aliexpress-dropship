@@ -1,23 +1,25 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, test, expect, vi, beforeEach } from 'vitest'
+
+type ValidatorFn<TInput = unknown, TOutput = unknown> = (data: TInput) => TOutput
+type HandlerFn<TData = unknown, TResult = unknown> = (ctx: { data: TData }) => Promise<TResult> | TResult
 
 // Mock react-start server functions to run directly in Vitest
 vi.mock('@tanstack/react-start', () => {
   const createServerFn = () => {
-    let validatorFn = (data: any) => data
-    let handlerFn = (ctx: any) => ctx
+    let validatorFn: ValidatorFn = (data: unknown) => data
+    let handlerFn: HandlerFn = (ctx: { data: unknown }) => ctx
 
-    const fn = async (input: any) => {
+    const fn = async (input: { data: unknown }) => {
       const validated = validatorFn(input ? input.data : undefined)
       return handlerFn({ data: validated })
     }
 
-    fn.validator = (val: any) => {
+    fn.validator = (val: ValidatorFn) => {
       validatorFn = val
       return fn
     }
 
-    fn.handler = (hand: any) => {
+    fn.handler = (hand: HandlerFn) => {
       handlerFn = hand
       return fn
     }

@@ -198,7 +198,7 @@ function Dashboard() {
   const [settingsSuccess, setSettingsSuccess] = useState<string | null>(null)
   const [settingsError, setSettingsError] = useState<string | null>(null)
 
-  const currentMultiplier = (globalSettings as any)?.marginMultiplier ?? 1.5
+  const currentMultiplier = (globalSettings as { marginMultiplier?: number } | undefined)?.marginMultiplier ?? 1.5
 
   const handleUpdateSettings = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -220,8 +220,8 @@ function Dashboard() {
         setSettingsSuccess(`MULTIPLIER ADJUSTED: ${val}x`)
         refetchSettings()
       }
-    } catch (err: any) {
-      setSettingsError(err.message || 'TRANSACTION REJECTED BY DATABASE')
+    } catch (err: unknown) {
+      setSettingsError(err instanceof Error ? err.message : 'TRANSACTION REJECTED BY DATABASE')
     } finally {
       setIsUpdatingSettings(false)
     }

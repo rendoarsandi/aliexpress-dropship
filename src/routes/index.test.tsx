@@ -1,10 +1,16 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
+import type { ReactNode, AnchorHTMLAttributes, ComponentType } from 'react'
+
+interface LinkMockProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
+  children?: ReactNode
+  to?: string
+}
 
 // Mock react-router
 vi.mock('@tanstack/react-router', () => ({
-  createFileRoute: () => (options: any) => ({ options }),
-  Link: ({ children, to, className, ...props }: any) => (
+  createFileRoute: () => <TOpts,>(options: TOpts) => ({ options }),
+  Link: ({ children, to, className, ...props }: LinkMockProps) => (
     <a href={to} className={className} {...props}>
       {children}
     </a>
@@ -27,16 +33,16 @@ vi.mock('@tanstack/react-db', () => ({
     get: vi.fn(),
     update: vi.fn(),
   }),
-  localOnlyCollectionOptions: (opts: any) => opts,
+  localOnlyCollectionOptions: <T,>(opts: T): T => opts,
 }))
 
 // Mock react-store
 vi.mock('@tanstack/react-store', () => ({
-  useStore: (store: any, selector: any) => selector(store.state),
-  Store: class {
-    state: any
-    constructor(init: any) { this.state = init }
-    setState(fn: any) { this.state = fn(this.state) }
+  useStore: <TState, TSelected>(store: { state: TState }, selector: (state: TState) => TSelected): TSelected => selector(store.state),
+  Store: class<TState> {
+    state: TState
+    constructor(init: TState) { this.state = init }
+    setState(fn: (prev: TState) => TState) { this.state = fn(this.state) }
   }
 }))
 
@@ -57,7 +63,8 @@ vi.mock('lucide-react', () => ({
 import { Route } from './index'
 
 describe('StorefrontLanding Component Tests', () => {
-  const StorefrontLandingComponent = (Route as any).options.component
+  const routeOptions = Route.options as unknown as { component: ComponentType }
+  const StorefrontLandingComponent = routeOptions.component
 
   beforeEach(() => {
     vi.clearAllMocks()

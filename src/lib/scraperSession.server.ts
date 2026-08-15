@@ -5,6 +5,7 @@ import { products, settings } from '../db/schema'
 import { eq } from 'drizzle-orm'
 import { auth } from './auth'
 import { Effect } from 'effect'
+import type { AuthSession } from './settingsSession.server'
 
 
 // Define Effect schema to validate scraped product fields typesafely
@@ -80,12 +81,12 @@ export const importAliExpressProductEffect = (
     const { url } = data
 
     // 1. Authorization Boundary Check via Effect
-    let session: any = context?.session
+    let session: AuthSession | null | undefined = context?.session as AuthSession | null | undefined
     if (session === undefined) {
       session = yield* Effect.tryPromise({
         try: () => {
           const headers = getRequestHeaders()
-          return auth.api.getSession({ headers })
+          return auth.api.getSession({ headers }) as Promise<AuthSession | null>
         },
         catch: () => null
       })
@@ -267,15 +268,15 @@ export const importAliExpressProductEffect = (
 // Testable core handler with optional context override
 export async function importAliExpressProductHandler(
   data: { url: string },
-  context?: { session?: unknown }
+  context?: { session?: AuthSession | null | unknown }
 ) {
   const program = importAliExpressProductEffect(data, context).pipe(
-    Effect.catchAll((err: any) => {
-      if (err && typeof err === 'object' && 'message' in err) {
-        return Effect.succeed({ error: err.message })
+    Effect.catchAll((err: unknown) => {
+      if (err && typeof err === 'object' && 'message' in err && typeof (err as { message: unknown }).message === 'string') {
+        return Effect.succeed({ error: (err as { message: string }).message })
       }
-      if (err && typeof err === 'object' && 'error' in err) {
-        return Effect.succeed(err)
+      if (err && typeof err === 'object' && 'error' in err && typeof (err as { error: unknown }).error === 'string') {
+        return Effect.succeed({ error: (err as { error: string }).error })
       }
       return Effect.succeed({ error: `OPERATION FAILURE: ${err instanceof Error ? err.message : String(err)}` })
     })

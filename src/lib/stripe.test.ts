@@ -1,23 +1,25 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest'
+
+type ValidatorFn<TInput = unknown, TOutput = unknown> = (data: TInput) => TOutput
+type HandlerFn<TData = unknown, TResult = unknown> = (ctx: { data: TData }) => Promise<TResult> | TResult
 
 // Mock react-start server functions to run directly in Vitest without AsyncLocalStorage context
 vi.mock('@tanstack/react-start', () => {
   const createServerFn = () => {
-    let validatorFn = (data: any) => data
-    let handlerFn = (ctx: any) => ctx
+    let validatorFn: ValidatorFn = (data: unknown) => data
+    let handlerFn: HandlerFn = (ctx: { data: unknown }) => ctx
 
-    const fn = async (input: any) => {
+    const fn = async (input: { data: unknown }) => {
       const validated = validatorFn(input ? input.data : undefined)
       return handlerFn({ data: validated })
     }
 
-    fn.validator = (val: any) => {
+    fn.validator = (val: ValidatorFn) => {
       validatorFn = val
       return fn
     }
 
-    fn.handler = (hand: any) => {
+    fn.handler = (hand: HandlerFn) => {
       handlerFn = hand
       return fn
     }
@@ -32,7 +34,7 @@ vi.mock('@tanstack/react-start', () => {
 
 // Mock better-sqlite3 to bypass native compilation binding limitations on Termux
 vi.mock('better-sqlite3', () => {
-  const DatabaseMock = function (this: any) {
+  const DatabaseMock = function (this: Record<string, unknown>) {
     this.exec = vi.fn()
     this.prepare = vi.fn().mockReturnValue({
       get: vi.fn(),
@@ -47,7 +49,7 @@ vi.mock('better-sqlite3', () => {
 
 const mockStripeCreate = vi.fn()
 vi.mock('stripe', () => {
-  const MockStripe = vi.fn().mockImplementation(function (this: any) {
+  const MockStripe = vi.fn().mockImplementation(function (this: Record<string, unknown>) {
     this.checkout = {
       sessions: {
         create: mockStripeCreate
@@ -90,7 +92,7 @@ describe('Stripe Checkout Session Server Functions', () => {
 
       const result = await createCheckoutSessionFn({ data: payload })
       expect(result).toBeDefined()
-      expect((result as any).simulated).toBe(true)
+      expect('simulated' in result && result.simulated).toBe(true)
       expect(result.url).toBeNull()
     })
 
@@ -158,8 +160,8 @@ describe('Stripe Checkout Session Server Functions', () => {
 
       const result = await createStripeCheckoutSessionFn({ data: validPayload })
       expect(result).toBeDefined()
-      expect((result as any).mock).toBe(true)
-      expect((result as any).sessionId).toBeDefined()
+      expect('mock' in result && result.mock).toBe(true)
+      expect('sessionId' in result && result.sessionId).toBeDefined()
       expect(result.url).toContain('/checkout?success=true')
       expect(result.url).toContain('email=user%40dstrkt.com')
       expect(result.url).toContain('name=John%20Doe')
@@ -217,8 +219,8 @@ describe('Stripe Checkout Session Server Functions', () => {
       const result = await createStripeCheckoutSessionFn({ data: validPayload })
 
       expect(result).toBeDefined()
-      expect((result as any).mock).toBe(true)
-      expect((result as any).sessionId).toBeDefined()
+      expect('mock' in result && result.mock).toBe(true)
+      expect('sessionId' in result && result.sessionId).toBeDefined()
       expect(result.url).toContain('/checkout?success=true')
     })
   })

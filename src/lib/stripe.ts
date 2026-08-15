@@ -121,8 +121,12 @@ export const createStripeCheckoutSessionFn = createServerFn({ method: 'POST' })
   })
   .handler(async ({ data }) => {
     const program = createStripeCheckoutSessionEffect(data).pipe(
-      Effect.catchAll((err: any) => {
-        const msg = err && typeof err === 'object' && 'message' in err ? err.message : String(err)
+      Effect.catchAll((err: unknown) => {
+        const msg = err instanceof Error
+          ? err.message
+          : typeof err === 'object' && err !== null && 'message' in err
+            ? String((err as { message: unknown }).message)
+            : String(err)
         return Effect.succeed({ error: msg, url: '' })
       })
     )

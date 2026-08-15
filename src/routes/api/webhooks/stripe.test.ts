@@ -1,7 +1,8 @@
-import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, test, expect, vi, beforeEach, afterEach, type MockInstance } from 'vitest'
+
 // Mock better-sqlite3 to bypass native compilation binding limitations on Termux
 vi.mock('better-sqlite3', () => {
-  const DatabaseMock = function (this: any) {
+  const DatabaseMock = function (this: Record<string, unknown>) {
     this.exec = vi.fn()
     this.prepare = vi.fn().mockReturnValue({
       get: vi.fn(),
@@ -17,6 +18,16 @@ vi.mock('better-sqlite3', () => {
 import { db } from '../../../db'
 import { Route } from './stripe'
 
+type HttpHandler = (ctx: { request: Request }) => Promise<Response>
+
+function getRoutePostHandler(): HttpHandler | undefined {
+  const handlers = Route.options.server?.handlers
+  if (handlers && typeof handlers === 'object' && 'POST' in handlers) {
+    return handlers.POST as HttpHandler
+  }
+  return undefined
+}
+
 // Mock Stripe SDK
 vi.mock('stripe', () => {
   const mockConstructEvent = vi.fn().mockImplementation(() => ({
@@ -29,7 +40,7 @@ vi.mock('stripe', () => {
     }
   }))
 
-  const MockStripe = vi.fn().mockImplementation(function (this: any) {
+  const MockStripe = vi.fn().mockImplementation(function (this: Record<string, unknown>) {
     this.webhooks = {
       constructEvent: mockConstructEvent
     }
@@ -42,21 +53,19 @@ vi.mock('stripe', () => {
 })
 
 describe('Stripe Webhook Endpoint Route Handler', () => {
-  let updateSpy: any
-  let setSpy: any
-  let whereSpy: any
+  let updateSpy: MockInstance | undefined
+  let setSpy: ReturnType<typeof vi.fn>
+  let whereSpy: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
     // Spy on the DB update operations
-    setSpy = vi.fn().mockReturnThis()
-    whereSpy = vi.fn().mockResolvedValue({} as any)
-    updateSpy = vi.spyOn(db, 'update').mockReturnValue({
-      set: setSpy,
-    } as any)
-
-    setSpy.mockReturnValue({
+    whereSpy = vi.fn().mockResolvedValue({})
+    setSpy = vi.fn().mockReturnValue({
       where: whereSpy
     })
+    updateSpy = vi.spyOn(db, 'update').mockReturnValue({
+      set: setSpy,
+    } as unknown as ReturnType<typeof db.update>)
   })
 
   afterEach(() => {
@@ -82,7 +91,7 @@ describe('Stripe Webhook Endpoint Route Handler', () => {
     })
 
     // Get POST handler
-    const postHandler = (Route.options.server?.handlers as any)?.POST
+    const postHandler = getRoutePostHandler()
     expect(postHandler).toBeDefined()
 
     if (postHandler) {
@@ -104,7 +113,9 @@ describe('Stripe Webhook Endpoint Route Handler', () => {
     process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test_mock'
 
     // Requiring Stripe mock to throw signature verification error
-    const stripeModule = await import('stripe') as any
+    const stripeModule = (await import('stripe')) as typeof import('stripe') & {
+      mockConstructEvent: ReturnType<typeof vi.fn>
+    }
     stripeModule.mockConstructEvent.mockImplementationOnce(() => {
       throw new Error('No matching signature found')
     })
@@ -117,7 +128,7 @@ describe('Stripe Webhook Endpoint Route Handler', () => {
       body: JSON.stringify({ id: 'evt_test_123' })
     })
 
-    const postHandler = (Route.options.server?.handlers as any)?.POST
+    const postHandler = getRoutePostHandler()
     expect(postHandler).toBeDefined()
 
     if (postHandler) {

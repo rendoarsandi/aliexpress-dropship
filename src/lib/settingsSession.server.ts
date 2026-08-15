@@ -27,21 +27,35 @@ export class DatabaseError {
 // Effect Pipelines & Core Logic
 // ==========================================
 
-const getSession = (context?: { session?: unknown }) =>
+export interface AuthUser {
+  id: string
+  email: string
+  name: string
+  role?: string
+  emailVerified: boolean
+  image?: string | null
+}
+
+export interface AuthSession {
+  user: AuthUser
+  session?: unknown
+}
+
+const getSession = (context?: { session?: AuthSession | null | unknown }) =>
   Effect.gen(function* () {
     if (context?.session !== undefined) {
-      return context.session as any
+      return (context.session as AuthSession | null) ?? null
     }
     return yield* Effect.tryPromise({
       try: () => {
         const headers = getRequestHeaders()
-        return auth.api.getSession({ headers })
+        return auth.api.getSession({ headers }) as Promise<AuthSession | null>
       },
       catch: () => null
     })
   })
 
-const requireAdmin = (context?: { session?: unknown }) =>
+const requireAdmin = (context?: { session?: AuthSession | null | unknown }) =>
   Effect.gen(function* () {
     const session = yield* getSession(context)
     const adminEmails = (typeof process !== 'undefined' && process.env.ADMIN_EMAILS ? process.env.ADMIN_EMAILS : 'admin@dstrkt.com')
@@ -64,7 +78,7 @@ export interface SettingRecord {
   updatedAt: number
 }
 
-export const getSettingsEffect = (context?: { session?: unknown }) =>
+export const getSettingsEffect = (context?: { session?: AuthSession | null | unknown }) =>
   Effect.gen(function* () {
     yield* requireAdmin(context)
 
@@ -73,7 +87,7 @@ export const getSettingsEffect = (context?: { session?: unknown }) =>
         const res = await db.select().from(settings).where(eq(settings.id, 'markup_multiplier')).get()
         return (res as SettingRecord) || null
       },
-      catch: (err: any) => new DatabaseError(err?.message || 'Failed to select from DB')
+      catch: (err: unknown) => new DatabaseError(err instanceof Error ? err.message : 'Failed to select from DB')
     })
 
     if (row) {
@@ -88,8 +102,8 @@ export const getSettingsEffect = (context?: { session?: unknown }) =>
       updatedAt: Date.now()
     }
   }).pipe(
-    Effect.catchAll((err: any) => {
-      if (err && err._tag === 'UnauthorizedError') {
+    Effect.catchAll((err: unknown) => {
+      if (err instanceof UnauthorizedError || (typeof err === 'object' && err !== null && '_tag' in err && err._tag === 'UnauthorizedError')) {
         return Effect.fail(err)
       }
       // Log DB error and fallback to default row
@@ -106,7 +120,7 @@ export const getSettingsEffect = (context?: { session?: unknown }) =>
 
 export const updateSettingsEffect = (
   data: { marginMultiplier: number },
-  context?: { session?: unknown }
+  context?: { session?: AuthSession | null | unknown }
 ) =>
   Effect.gen(function* () {
     yield* requireAdmin(context)
@@ -120,7 +134,7 @@ export const updateSettingsEffect = (
         const res = await db.select().from(settings).where(eq(settings.id, 'markup_multiplier')).get()
         return (res as SettingRecord) || null
       },
-      catch: (err: any) => new DatabaseError(err?.message || 'Database select error')
+      catch: (err: unknown) => new DatabaseError(err instanceof Error ? err.message : 'Database select error')
     })
 
     if (existing) {
@@ -131,7 +145,7 @@ export const updateSettingsEffect = (
             updatedAt: Date.now()
           })
           .where(eq(settings.id, 'markup_multiplier')),
-        catch: (err: any) => new DatabaseError(err?.message || 'Database update error')
+        catch: (err: unknown) => new DatabaseError(err instanceof Error ? err.message : 'Database update error')
       })
     } else {
       yield* Effect.tryPromise({
@@ -142,7 +156,7 @@ export const updateSettingsEffect = (
           marginMultiplier: data.marginMultiplier,
           updatedAt: Date.now()
         }),
-        catch: (err: any) => new DatabaseError(err?.message || 'Database insert error')
+        catch: (err: unknown) => new DatabaseError(err instanceof Error ? err.message : 'Database insert error')
       })
     }
 
@@ -153,31 +167,34 @@ export const updateSettingsEffect = (
 // Handlers (Adapters for TanStack Start / Tests)
 // ==========================================
 
-export async function getSettingsHandler(context?: { session?: unknown }): Promise<SettingRecord> {
+export async function getSettingsHandler(context?: { session?: AuthSession | null | unknown }): Promise<SettingRecord> {
   try {
     return await Effect.runPromise(getSettingsEffect(context))
-  } catch (err: any) {
-    if (err && (err._tag === 'UnauthorizedError' || err.message?.includes('UNAUTHORIZED') || String(err).includes('UNAUTHORIZED'))) {
+  } catch (err: unknown) {
+    if (err instanceof UnauthorizedError || (typeof err === 'object' && err !== null && 'message' in err && String((err as Error).message).includes('UNAUTHORIZED'))) {
       throw new Error('UNAUTHORIZED: ADMIN SESSION REQUIRED')
     }
     throw err
   }
 }
 
+export type UpdateSettingsResult = { success: true } | { error: string }
+
 export async function updateSettingsHandler(
   data: { marginMultiplier: number },
-  context?: { session?: unknown }
-) {
+  context?: { session?: AuthSession | null | unknown }
+): Promise<UpdateSettingsResult> {
   const program = updateSettingsEffect(data, context).pipe(
-    Effect.catchAll((err: any) => {
-      if (err && err._tag === 'UnauthorizedError') {
-        return Effect.succeed({ error: err.message })
+    Effect.catchAll((err: unknown) => {
+      if (err instanceof UnauthorizedError || (typeof err === 'object' && err !== null && '_tag' in err && err._tag === 'UnauthorizedError')) {
+        return Effect.succeed({ error: (err as UnauthorizedError).message })
       }
-      if (err && err._tag === 'InvalidValueError') {
-        return Effect.succeed({ error: err.message })
+      if (err instanceof InvalidValueError || (typeof err === 'object' && err !== null && '_tag' in err && err._tag === 'InvalidValueError')) {
+        return Effect.succeed({ error: (err as InvalidValueError).message })
       }
       console.error('Failed to update settings:', err)
-      return Effect.succeed({ error: `DATABASE ERROR: ${err?.message || String(err)}` })
+      const msg = err instanceof Error ? err.message : String(err)
+      return Effect.succeed({ error: `DATABASE ERROR: ${msg}` })
     })
   )
   return Effect.runPromise(program)
